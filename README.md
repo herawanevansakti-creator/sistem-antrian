@@ -1,36 +1,192 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Interview Queue System - Sistem Antrean Wawancara Real-time
 
-## Getting Started
+Aplikasi modern untuk manajemen antrean wawancara dengan fitur real-time menggunakan **Next.js**, **Clerk**, dan **Supabase**.
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
+![Supabase](https://img.shields.io/badge/Supabase-2-green?style=flat-square&logo=supabase)
+![Clerk](https://img.shields.io/badge/Clerk-Auth-purple?style=flat-square&logo=clerk)
+
+## ✨ Fitur Utama
+
+- 🔐 **Autentikasi Multi-Provider** - Login dengan Google, Email via Clerk
+- 👥 **Multi-Role System** - Admin, Interviewer, Kandidat
+- ⚡ **Real-time Updates** - Supabase Realtime untuk update instan
+- 🎯 **Auto-Assign Cerdas** - Sistem otomatis menugaskan kandidat
+- 🔔 **Notifikasi Browser** - Kandidat mendapat notifikasi saat dipanggil
+- 📊 **Dashboard Analytics** - Statistik rekrutmen lengkap
+- 📱 **Responsive Design** - Optimal di desktop dan mobile
+
+## 🛠️ Tech Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS 4, Framer Motion
+- **Auth**: Clerk
+- **Database**: Supabase (PostgreSQL)
+- **Realtime**: Supabase Realtime
+- **Hosting**: Vercel (recommended)
+
+## 📦 Instalasi
+
+### 1. Clone Repository
+
+```bash
+git clone <repository-url>
+cd interview-queue
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Setup Supabase
+
+1. Buat project baru di [Supabase](https://supabase.com)
+2. Buka SQL Editor dan jalankan script `supabase-setup.sql`
+3. Copy URL dan API keys dari Settings > API
+
+### 4. Setup Clerk
+
+1. Buat project baru di [Clerk](https://clerk.com)
+2. Enable Google OAuth dan Email login
+3. Buat Webhook untuk sync user:
+   - URL: `https://your-domain.com/api/webhooks/clerk`
+   - Events: `user.created`, `user.updated`, `user.deleted`
+4. Copy API keys dan Webhook Secret
+
+### 5. Environment Variables
+
+Buat file `.env.local` berdasarkan `env.example`:
+
+```env
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_xxx
+CLERK_SECRET_KEY=sk_test_xxx
+CLERK_WEBHOOK_SECRET=whsec_xxx
+
+# Clerk URLs
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
+SUPABASE_SERVICE_ROLE_KEY=xxx
+```
+
+### 6. Jalankan Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🏗️ Struktur Proyek
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/
+│   ├── api/
+│   │   └── webhooks/clerk/     # Clerk webhook handler
+│   ├── dashboard/
+│   │   ├── applications/       # Kelola aplikasi (Admin)
+│   │   ├── apply/              # Lamar lowongan (Kandidat)
+│   │   ├── interview/[id]/     # Sesi wawancara
+│   │   ├── interviewers/       # Kelola pewawancara
+│   │   ├── jobs/               # Kelola lowongan
+│   │   ├── my-applications/    # Lamaran saya
+│   │   ├── my-sessions/        # Sesi wawancara saya
+│   │   ├── queue/              # Antrean (Interviewer)
+│   │   └── queue-status/       # Status antrean (Kandidat)
+│   ├── sign-in/
+│   └── sign-up/
+├── components/
+│   ├── CandidateQueueStatus.tsx
+│   ├── InterviewerControls.tsx
+│   ├── QueueDisplay.tsx
+│   ├── Sidebar.tsx
+│   └── StatCard.tsx
+├── lib/
+│   └── supabase/
+│       ├── client.ts           # Browser client
+│       └── server.ts           # Server client
+├── types/
+│   └── index.ts                # TypeScript types
+└── middleware.ts               # Clerk auth middleware
+```
 
-## Learn More
+## 👤 Roles & Permissions
 
-To learn more about Next.js, take a look at the following resources:
+### Admin
+- Kelola lowongan
+- Kelola aplikasi
+- Monitor pewawancara
+- Akses statistik lengkap
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Interviewer
+- Lihat antrean
+- Panggil kandidat (Auto-assign)
+- Lakukan wawancara
+- Beri penilaian
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Kandidat
+- Daftar lowongan
+- Check-in saat tiba
+- Lihat status antrean real-time
+- Terima notifikasi
 
-## Deploy on Vercel
+## 🔄 Alur Sistem
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Kandidat Daftar** → Status: `registered`
+2. **Check-in di Lokasi** → Status: `waiting`
+3. **Interviewer Klik "Siap"** → Sistem Auto-Assign → Status: `assigned`
+4. **Kandidat Menerima Notifikasi** → Masuk Ruangan
+5. **Wawancara Dimulai** → Status: `interviewing`
+6. **Wawancara Selesai** → Status: `completed`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🚀 Deployment
+
+### Vercel (Recommended)
+
+1. Push ke GitHub
+2. Import project di Vercel
+3. Tambahkan Environment Variables
+4. Deploy!
+
+### Environment Variables di Vercel
+
+Pastikan semua env variables dari `.env.local` ditambahkan di Vercel Dashboard > Settings > Environment Variables.
+
+## 📝 Custom User Roles di Clerk
+
+Untuk menambahkan Interviewer atau Admin:
+
+1. Buka Clerk Dashboard
+2. Users > Pilih User
+3. Edit Public Metadata:
+```json
+{
+  "role": "interviewer"
+}
+```
+atau
+```json
+{
+  "role": "admin"
+}
+```
+
+4. User akan otomatis sync ke Supabase via webhook
+
+## 🤝 Kontribusi
+
+Pull requests welcome! Untuk perubahan besar, silakan buka issue terlebih dahulu.
+
+## 📄 License
+
+[MIT](LICENSE)
