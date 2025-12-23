@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 
 import LandingPage from '@/components/LandingPage';
+import CandidateDashboard from '@/components/CandidateDashboard';
 import {
   useProfile,
   useJobs,
@@ -104,15 +105,9 @@ function MainApp() {
       )}
 
       {profile.role === 'candidate' && (
-        <CandidateView
+        <CandidateDashboard
           profile={profile}
           notify={notify}
-          isScanning={isScanning}
-          setIsScanning={setIsScanning}
-          locationVerified={locationVerified}
-          setLocationVerified={setLocationVerified}
-          locationLoading={locationLoading}
-          setLocationLoading={setLocationLoading}
         />
       )}
 
