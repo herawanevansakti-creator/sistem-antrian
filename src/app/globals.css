@@ -42,8 +42,8 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: linear-gradient(180deg, rgb(var(--bg-dark)) 0%, rgb(var(--bg-card)) 100%);
-  color: #ffffff;
+  background: #f6f6f8;
+  color: #0e0e1b;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
