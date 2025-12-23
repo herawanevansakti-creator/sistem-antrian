@@ -1,20 +1,25 @@
 import { SignIn } from "@clerk/nextjs";
+import { TrendingUp } from "lucide-react";
 
 export default function SignInPage() {
     return (
-        <div className="min-h-screen flex items-center justify-center px-4 relative">
-            {/* Background Effects */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl" />
-                <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-500/20 rounded-full blur-3xl" />
-            </div>
+        <div className="min-h-screen bg-indigo-50 flex items-center justify-center px-4 py-12">
+            <div className="w-full max-w-md">
+                {/* Logo */}
+                <div className="text-center mb-8">
+                    <div className="bg-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center text-white mx-auto shadow-xl rotate-3 mb-4">
+                        <TrendingUp className="w-8 h-8" />
+                    </div>
+                    <h1 className="text-2xl font-black text-indigo-950 tracking-tighter italic">RecruitFlow</h1>
+                    <p className="text-gray-400 text-sm font-medium mt-1">Smart Queue Management System</p>
+                </div>
 
-            <div className="relative z-10">
+                {/* Sign In Component */}
                 <SignIn
                     appearance={{
                         elements: {
-                            rootBox: "mx-auto",
-                            card: "glass-card shadow-2xl",
+                            rootBox: "mx-auto w-full",
+                            card: "bg-white shadow-2xl rounded-[32px] border-0",
                         }
                     }}
                 />

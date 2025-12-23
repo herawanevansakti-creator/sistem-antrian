@@ -1,5 +1,9 @@
 import Sidebar from '@/components/Sidebar';
 
+// Force dynamic rendering for all dashboard pages
+// This prevents build errors with Clerk authentication
+export const dynamic = 'force-dynamic';
+
 export default function DashboardLayout({
     children,
 }: {

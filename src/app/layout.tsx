@@ -4,16 +4,19 @@ import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Interview Queue System | Sistem Antrean Wawancara Real-time",
-  description: "Sistem manajemen antrean wawancara real-time dengan fitur auto-assign dan notifikasi langsung untuk kandidat dan pewawancara.",
-  keywords: ["interview", "queue", "realtime", "recruitment", "wawancara", "antrean"],
-  authors: [{ name: "Interview Queue System" }],
+  title: "RecruitFlow Pro | Smart Queue Management System",
+  description: "Sistem manajemen antrean wawancara real-time dengan fitur QR Check-in, Interview Timer, dan Advanced Analytics.",
+  keywords: ["interview", "queue", "realtime", "recruitment", "wawancara", "antrean", "recruitflow"],
+  authors: [{ name: "RecruitFlow Pro" }],
   openGraph: {
-    title: "Interview Queue System",
-    description: "Sistem manajemen antrean wawancara real-time",
+    title: "RecruitFlow Pro",
+    description: "Smart Queue Management System untuk rekrutmen",
     type: "website",
   },
 };
+
+// Force dynamic rendering for all pages
+export const dynamic = 'force-dynamic';
 
 export default function RootLayout({
   children,
@@ -22,26 +25,55 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
+      dynamic
       appearance={{
         variables: {
-          colorPrimary: "#f97316",
-          colorBackground: "#0f172a",
-          colorInputBackground: "#1e293b",
-          colorInputText: "#f8fafc",
+          colorPrimary: "#4f46e5",
+          colorBackground: "#ffffff",
+          colorInputBackground: "#f8fafc",
+          colorInputText: "#1e293b",
+          colorText: "#1e293b",
+          colorTextSecondary: "#64748b",
           colorTextOnPrimaryBackground: "#ffffff",
+          colorNeutral: "#64748b",
+          colorDanger: "#ef4444",
+          colorSuccess: "#22c55e",
+          colorWarning: "#eab308",
+          borderRadius: "12px",
         },
         elements: {
-          card: "bg-slate-800 border-slate-700",
-          headerTitle: "text-white",
-          headerSubtitle: "text-slate-400",
-          socialButtonsBlockButton: "bg-slate-700 border-slate-600 hover:bg-slate-600",
-          formButtonPrimary: "bg-orange-500 hover:bg-orange-600",
-          footerActionLink: "text-orange-400 hover:text-orange-300",
+          rootBox: "w-full",
+          card: "bg-white border border-gray-200 shadow-2xl rounded-[32px]",
+          headerTitle: "text-gray-900 font-bold",
+          headerSubtitle: "text-gray-500",
+          socialButtonsBlockButton: "bg-white border-gray-200 text-gray-900 hover:bg-gray-50",
+          socialButtonsBlockButtonText: "text-gray-900 font-medium",
+          dividerLine: "bg-gray-200",
+          dividerText: "text-gray-400",
+          formFieldLabel: "text-gray-700 font-medium",
+          formFieldInput: "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400",
+          formFieldInputShowPasswordButton: "text-gray-400 hover:text-gray-600",
+          formButtonPrimary: "bg-indigo-600 hover:bg-indigo-700 text-white font-semibold",
+          formButtonReset: "text-gray-500 hover:text-gray-700",
+          footerActionLink: "text-indigo-600 hover:text-indigo-700 font-medium",
+          footerActionText: "text-gray-500",
+          identityPreviewText: "text-gray-900",
+          identityPreviewEditButton: "text-indigo-600 hover:text-indigo-700",
+          formFieldAction: "text-indigo-600 hover:text-indigo-700",
+          formFieldHintText: "text-gray-400",
+          formFieldSuccessText: "text-green-600",
+          formFieldErrorText: "text-red-500",
+          otpCodeFieldInput: "bg-gray-50 border-gray-200 text-gray-900",
+          alertText: "text-gray-700",
+          userButtonPopoverCard: "bg-white border-gray-200",
+          userButtonPopoverActionButton: "text-gray-700 hover:bg-gray-50",
+          userButtonPopoverActionButtonText: "text-gray-700",
+          userButtonPopoverFooter: "hidden",
         }
       }}
     >
-      <html lang="id">
-        <body className="antialiased">
+      <html lang="id" suppressHydrationWarning>
+        <body className="antialiased bg-slate-50">
           {children}
           <Toaster
             richColors
