@@ -111,9 +111,26 @@ export default function SignUpPage() {
                             }}
                         />
 
+                        {/* Sign In Link */}
+                        <div style={{ marginTop: '24px', textAlign: 'center' }}>
+                            <p style={{ fontSize: '14px', color: '#6B7280' }}>
+                                Already have an account?{' '}
+                                <Link
+                                    href="/sign-in"
+                                    style={{
+                                        fontWeight: 500,
+                                        color: '#4F46E5',
+                                        textDecoration: 'none'
+                                    }}
+                                >
+                                    Sign in
+                                </Link>
+                            </p>
+                        </div>
+
                         {/* Secured by Clerk */}
                         <div style={{
-                            marginTop: '32px',
+                            marginTop: '24px',
                             paddingTop: '24px',
                             borderTop: '1px solid #E5E7EB',
                             textAlign: 'center'
