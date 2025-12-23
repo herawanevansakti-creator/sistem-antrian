@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useUser, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/nextjs';
+import { useUser, SignedIn, SignedOut } from '@clerk/nextjs';
 import { UserButton } from '@clerk/nextjs';
 import {
   User,
@@ -19,9 +19,11 @@ import {
   TrendingUp,
   X,
   Star,
-  Loader2
+  Loader2,
+  Infinity
 } from 'lucide-react';
 
+import LandingPage from '@/components/LandingPage';
 import {
   useProfile,
   useJobs,
@@ -31,11 +33,10 @@ import {
   useAnalytics,
   checkInWithLocation,
   requestNextCandidate,
-  completeInterviewSession,
-  updateInterviewerStatus
+  completeInterviewSession
 } from '@/lib/hooks';
 
-import type { ScoreSummary, Application, Job } from '@/types';
+import type { ScoreSummary, Application } from '@/types';
 
 export default function RecruitFlowApp() {
   return (
@@ -44,7 +45,7 @@ export default function RecruitFlowApp() {
         <MainApp />
       </SignedIn>
       <SignedOut>
-        <RedirectToSignIn />
+        <LandingPage />
       </SignedOut>
     </>
   );
@@ -71,10 +72,10 @@ function MainApp() {
   // Loading state
   if (!isLoaded || profileLoading) {
     return (
-      <div className="min-h-screen bg-indigo-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f6f6f8] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600 font-medium">Memuat data...</p>
+          <Loader2 className="w-12 h-12 text-[#3636e2] animate-spin mx-auto mb-4" />
+          <p className="text-[#505095] font-medium">Memuat data...</p>
         </div>
       </div>
     );
@@ -95,8 +96,8 @@ function MainApp() {
     <div className="font-sans">
       {notification && (
         <div className="fixed top-24 right-6 z-[200]">
-          <div className="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border-l-4 border-indigo-500">
-            <Bell className="w-5 h-5 text-indigo-400" />
+          <div className="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border-l-4 border-[#3636e2]">
+            <Bell className="w-5 h-5 text-[#3636e2]" />
             <span className="text-sm font-bold">{notification}</span>
           </div>
         </div>
@@ -166,43 +167,43 @@ function RoleSelection({ userId, userEmail, userName }: { userId?: string; userE
   };
 
   return (
-    <div className="min-h-screen bg-indigo-50 flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-white rounded-[40px] shadow-2xl p-10 text-center space-y-8">
+    <div className="min-h-screen bg-[#f6f6f8] flex items-center justify-center p-6">
+      <div className="max-w-md w-full bg-white rounded-[32px] shadow-2xl p-10 text-center space-y-8 border border-gray-100">
         <div className="space-y-2">
-          <div className="bg-indigo-600 w-16 h-16 rounded-2xl flex items-center justify-center text-white mx-auto shadow-xl rotate-3">
-            <TrendingUp className="w-8 h-8" />
+          <div className="bg-[#3636e2]/10 w-16 h-16 rounded-2xl flex items-center justify-center text-[#3636e2] mx-auto">
+            <Infinity className="w-8 h-8" />
           </div>
-          <h1 className="text-3xl font-black text-indigo-950 tracking-tighter italic">RecruitFlow</h1>
-          <p className="text-gray-400 font-medium">Pilih peran Anda</p>
+          <h1 className="text-3xl font-black text-[#0e0e1b] tracking-tighter italic">RecruitFlow</h1>
+          <p className="text-[#505095] font-medium">Pilih peran Anda untuk melanjutkan</p>
         </div>
         <div className="space-y-3">
           <button
             onClick={() => handleSelectRole('candidate')}
             disabled={loading}
-            className="w-full py-4 px-6 bg-white border-2 border-gray-100 rounded-2xl font-bold flex items-center justify-between hover:border-indigo-600 hover:bg-indigo-50 transition-all group disabled:opacity-50"
+            className="w-full py-4 px-6 bg-white border-2 border-gray-100 rounded-2xl font-bold flex items-center justify-between hover:border-[#3636e2] hover:bg-blue-50 transition-all group disabled:opacity-50"
           >
-            <span className="text-gray-900 group-hover:text-indigo-600">Kandidat</span>
-            <User className="w-5 h-5 text-gray-300 group-hover:text-indigo-600" />
+            <span className="text-[#0e0e1b] group-hover:text-[#3636e2]">Kandidat</span>
+            <User className="w-5 h-5 text-gray-300 group-hover:text-[#3636e2]" />
           </button>
           <button
             onClick={() => handleSelectRole('interviewer')}
             disabled={loading}
-            className="w-full py-4 px-6 bg-white border-2 border-gray-100 rounded-2xl font-bold flex items-center justify-between hover:border-indigo-600 hover:bg-indigo-50 transition-all group disabled:opacity-50"
+            className="w-full py-4 px-6 bg-white border-2 border-gray-100 rounded-2xl font-bold flex items-center justify-between hover:border-[#3636e2] hover:bg-purple-50 transition-all group disabled:opacity-50"
           >
-            <span className="text-gray-900 group-hover:text-indigo-600">Pewawancara</span>
-            <Users className="w-5 h-5 text-gray-300 group-hover:text-indigo-600" />
+            <span className="text-[#0e0e1b] group-hover:text-[#3636e2]">Pewawancara</span>
+            <Users className="w-5 h-5 text-gray-300 group-hover:text-[#3636e2]" />
           </button>
           <button
             onClick={() => handleSelectRole('admin')}
             disabled={loading}
-            className="w-full py-4 px-6 bg-white border-2 border-gray-100 rounded-2xl font-bold flex items-center justify-between hover:border-indigo-600 hover:bg-indigo-50 transition-all group disabled:opacity-50"
+            className="w-full py-4 px-6 bg-white border-2 border-gray-100 rounded-2xl font-bold flex items-center justify-between hover:border-[#3636e2] hover:bg-emerald-50 transition-all group disabled:opacity-50"
           >
-            <span className="text-gray-900 group-hover:text-indigo-600">Administrator</span>
-            <Settings className="w-5 h-5 text-gray-300 group-hover:text-indigo-600" />
+            <span className="text-[#0e0e1b] group-hover:text-[#3636e2]">Administrator</span>
+            <Settings className="w-5 h-5 text-gray-300 group-hover:text-[#3636e2]" />
           </button>
         </div>
         {loading && (
-          <div className="flex items-center justify-center gap-2 text-indigo-600">
+          <div className="flex items-center justify-center gap-2 text-[#3636e2]">
             <Loader2 className="w-5 h-5 animate-spin" />
             <span className="font-medium">Menyimpan...</span>
           </div>
@@ -215,17 +216,17 @@ function RoleSelection({ userId, userEmail, userName }: { userId?: string; userE
 // ===== NAVBAR =====
 function Navbar({ profile }: { profile: { full_name: string | null; role: string } }) {
   return (
-    <nav className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-50">
-      <div className="flex items-center gap-2">
-        <div className="bg-indigo-600 p-2 rounded-xl shadow-lg shadow-indigo-200">
-          <TrendingUp className="text-white w-5 h-5" />
+    <nav className="bg-white border-b border-gray-200/50 px-6 py-4 flex justify-between items-center sticky top-0 z-50">
+      <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#3636e2]/10 text-[#3636e2]">
+          <Infinity className="w-5 h-5" />
         </div>
-        <span className="font-black text-xl tracking-tighter text-indigo-900">RECRUITFLOW</span>
+        <span className="font-bold text-xl tracking-tight text-[#0e0e1b]">RecruitFlow</span>
       </div>
       <div className="flex items-center gap-4">
         <div className="hidden md:block text-right">
-          <p className="text-sm font-bold leading-none text-gray-900">{profile.full_name || 'User'}</p>
-          <span className="text-[10px] font-black text-indigo-500 uppercase">{profile.role}</span>
+          <p className="text-sm font-bold leading-none text-[#0e0e1b]">{profile.full_name || 'User'}</p>
+          <span className="text-[10px] font-bold text-[#3636e2] uppercase">{profile.role}</span>
         </div>
         <UserButton afterSignOutUrl="/" />
       </div>
@@ -304,31 +305,31 @@ function CandidateView({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+      <div className="min-h-screen bg-[#f6f6f8] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#3636e2] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#f6f6f8]">
       <Navbar profile={profile} />
       <main className="max-w-2xl mx-auto p-6 space-y-6">
         {!application ? (
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100 space-y-8">
             <div className="text-center space-y-2">
-              <h2 className="text-2xl font-black text-gray-800">Check-in Kehadiran</h2>
-              <p className="text-gray-500 text-sm">Gunakan QR Code di lobby dan verifikasi lokasi Anda.</p>
+              <h2 className="text-2xl font-black text-[#0e0e1b]">Check-in Kehadiran</h2>
+              <p className="text-[#505095] text-sm">Gunakan QR Code di lobby dan verifikasi lokasi Anda.</p>
             </div>
 
             {/* STEP 1: GEOFENCING */}
-            <div className={`p-6 rounded-2xl border-2 transition-all ${locationVerified ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'}`}>
+            <div className={`p-6 rounded-2xl border-2 transition-all ${locationVerified ? 'bg-emerald-50 border-emerald-200' : 'bg-orange-50 border-orange-200'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <MapPin className={locationVerified ? 'text-green-600' : 'text-orange-600'} />
+                  <MapPin className={locationVerified ? 'text-emerald-600' : 'text-orange-600'} />
                   <div>
-                    <p className="font-bold text-sm text-gray-900">Status Lokasi</p>
-                    <p className="text-xs text-gray-500">{locationVerified ? 'Anda berada di area kantor' : 'Verifikasi lokasi diperlukan'}</p>
+                    <p className="font-bold text-sm text-[#0e0e1b]">Status Lokasi</p>
+                    <p className="text-xs text-[#505095]">{locationVerified ? 'Anda berada di area kantor' : 'Verifikasi lokasi diperlukan'}</p>
                   </div>
                 </div>
                 {!locationVerified && (
@@ -345,16 +346,16 @@ function CandidateView({
                 {!isScanning ? (
                   <button
                     onClick={() => setIsScanning(true)}
-                    className="w-full py-12 border-4 border-dashed border-indigo-100 rounded-3xl flex flex-col items-center justify-center gap-4 text-indigo-600 hover:bg-indigo-50 transition-all"
+                    className="w-full py-12 border-4 border-dashed border-[#3636e2]/20 rounded-3xl flex flex-col items-center justify-center gap-4 text-[#3636e2] hover:bg-[#3636e2]/5 transition-all"
                   >
                     <QrCode className="w-16 h-16" />
                     <span className="font-black uppercase tracking-widest text-xs">Pindai QR Lokasi</span>
                   </button>
                 ) : (
-                  <div className="relative aspect-square bg-black rounded-3xl overflow-hidden">
+                  <div className="relative aspect-square bg-slate-900 rounded-3xl overflow-hidden">
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-48 h-48 border-2 border-white/50 rounded-2xl relative">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-indigo-500 animate-bounce" />
+                        <div className="absolute top-0 left-0 w-full h-1 bg-[#3636e2] animate-bounce" />
                       </div>
                     </div>
                     <div className="absolute bottom-6 inset-x-0 flex flex-col items-center gap-4">
@@ -365,7 +366,7 @@ function CandidateView({
                             key={j.id}
                             onClick={() => handleCheckIn(j.id)}
                             disabled={checkingIn}
-                            className="bg-white text-black py-3 rounded-xl font-bold text-sm hover:bg-gray-100 transition-all disabled:opacity-50"
+                            className="bg-white text-[#0e0e1b] py-3 rounded-xl font-bold text-sm hover:bg-gray-100 transition-all disabled:opacity-50"
                           >
                             {checkingIn ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : j.title}
                           </button>
@@ -378,7 +379,7 @@ function CandidateView({
             )}
           </div>
         ) : (
-          <div className={`p-10 rounded-[40px] shadow-2xl text-white ${application.status === 'assigned' ? 'bg-indigo-600' : 'bg-slate-800'}`}>
+          <div className={`p-10 rounded-[40px] shadow-2xl text-white ${application.status === 'assigned' ? 'bg-[#3636e2]' : 'bg-slate-800'}`}>
             <div className="flex justify-between items-start">
               <div>
                 <p className="text-white/50 text-[10px] font-black uppercase tracking-[0.2em]">Queue Number</p>
@@ -474,30 +475,30 @@ function InterviewerView({ profile, notify, interviewTime, setInterviewTime, tim
 
   if (sessionLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+      <div className="min-h-screen bg-[#f6f6f8] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#3636e2] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#f6f6f8]">
       <Navbar profile={profile} />
       <main className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           {!activeApp ? (
             <div className="bg-white h-[500px] rounded-[40px] flex flex-col items-center justify-center p-12 text-center space-y-6 shadow-sm border border-gray-100">
-              <div className="bg-indigo-50 p-6 rounded-full">
-                <Play className="w-12 h-12 text-indigo-600 fill-current" />
+              <div className="bg-[#3636e2]/10 p-6 rounded-full">
+                <Play className="w-12 h-12 text-[#3636e2] fill-current" />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-gray-800">Sesi Berikutnya?</h2>
-                <p className="text-gray-400 mt-2 max-w-xs mx-auto">Pastikan Anda sudah siap secara teknis sebelum memanggil kandidat.</p>
+                <h2 className="text-2xl font-black text-[#0e0e1b]">Sesi Berikutnya?</h2>
+                <p className="text-[#505095] mt-2 max-w-xs mx-auto">Pastikan Anda sudah siap secara teknis sebelum memanggil kandidat.</p>
               </div>
               <button
                 onClick={handleNextCandidate}
                 disabled={processing}
-                className="bg-indigo-600 text-white px-12 py-4 rounded-2xl font-black shadow-xl shadow-indigo-100 hover:-translate-y-1 transition-all disabled:opacity-50"
+                className="bg-[#3636e2] text-white px-12 py-4 rounded-2xl font-black shadow-xl shadow-[#3636e2]/20 hover:-translate-y-1 transition-all disabled:opacity-50"
               >
                 {processing ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Panggil Sekarang'}
               </button>
@@ -507,12 +508,12 @@ function InterviewerView({ profile, notify, interviewTime, setInterviewTime, tim
               {/* TIMER HEADER */}
               <div className="bg-slate-900 p-8 text-white flex justify-between items-center">
                 <div>
-                  <span className="text-indigo-400 text-[10px] font-black uppercase tracking-widest">Sesi Berlangsung</span>
+                  <span className="text-[#3636e2] text-[10px] font-black uppercase tracking-widest">Sesi Berlangsung</span>
                   <h2 className="text-3xl font-black">{activeApp.queue_number}</h2>
                   <p className="text-sm text-gray-400 mt-1">{activeApp.candidate?.full_name || 'Kandidat'}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-indigo-400 text-[10px] font-black uppercase tracking-widest">Durasi Wawancara</p>
+                  <p className="text-[#3636e2] text-[10px] font-black uppercase tracking-widest">Durasi Wawancara</p>
                   <p className="text-4xl font-mono font-black text-green-400">{formatTime(interviewTime)}</p>
                 </div>
               </div>
@@ -521,7 +522,7 @@ function InterviewerView({ profile, notify, interviewTime, setInterviewTime, tim
               <div className="p-8 space-y-8 flex-1 overflow-y-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-6">
-                    <h3 className="font-black text-xs uppercase text-gray-400 tracking-widest">Penilaian</h3>
+                    <h3 className="font-black text-xs uppercase text-[#505095] tracking-widest">Penilaian</h3>
                     <div className="space-y-6">
                       <StarRating label="Technical Skill" value={localScores.technical} onChange={(v) => setLocalScores({ ...localScores, technical: v })} />
                       <StarRating label="Communication" value={localScores.communication} onChange={(v) => setLocalScores({ ...localScores, communication: v })} />
@@ -529,9 +530,9 @@ function InterviewerView({ profile, notify, interviewTime, setInterviewTime, tim
                     </div>
                   </div>
                   <div className="space-y-4">
-                    <h3 className="font-black text-xs uppercase text-gray-400 tracking-widest">Internal Notes</h3>
+                    <h3 className="font-black text-xs uppercase text-[#505095] tracking-widest">Internal Notes</h3>
                     <textarea
-                      className="w-full h-48 bg-slate-50 border-2 border-gray-100 rounded-3xl p-5 outline-none focus:border-indigo-500 transition-all text-sm text-gray-900"
+                      className="w-full h-48 bg-[#f6f6f8] border-2 border-gray-100 rounded-3xl p-5 outline-none focus:border-[#3636e2] transition-all text-sm text-[#0e0e1b]"
                       placeholder="Feedback teknis..."
                       value={localScores.notes}
                       onChange={(e) => setLocalScores({ ...localScores, notes: e.target.value })}
@@ -544,7 +545,7 @@ function InterviewerView({ profile, notify, interviewTime, setInterviewTime, tim
                 <button
                   onClick={handleCompleteSession}
                   disabled={processing}
-                  className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all disabled:opacity-50"
+                  className="w-full py-5 bg-[#3636e2] text-white rounded-2xl font-black text-lg shadow-xl shadow-[#3636e2]/20 hover:bg-[#2828c4] transition-all disabled:opacity-50"
                 >
                   {processing ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'Simpan & Akhiri Sesi'}
                 </button>
@@ -555,23 +556,23 @@ function InterviewerView({ profile, notify, interviewTime, setInterviewTime, tim
 
         <div className="space-y-6">
           <div className="bg-white p-8 rounded-[32px] shadow-sm border border-gray-100">
-            <h3 className="font-black text-gray-800 mb-6 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-indigo-600" /> Antrean Hari Ini
+            <h3 className="font-black text-[#0e0e1b] mb-6 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-[#3636e2]" /> Antrean Hari Ini
             </h3>
             <div className="space-y-4 max-h-96 overflow-y-auto">
               {queue.map(app => (
-                <div key={app.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-gray-100">
+                <div key={app.id} className="flex items-center justify-between p-4 bg-[#f6f6f8] rounded-2xl border border-gray-100">
                   <div className="flex items-center gap-3">
-                    <div className="bg-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-indigo-600 shadow-sm border border-indigo-50 text-xs">{app.queue_number}</div>
+                    <div className="bg-white w-10 h-10 flex items-center justify-center rounded-xl font-black text-[#3636e2] shadow-sm border border-[#3636e2]/10 text-xs">{app.queue_number}</div>
                     <div>
-                      <p className="text-xs font-bold text-gray-700">{app.candidate?.full_name || 'Kandidat'}</p>
-                      <span className="text-[10px] text-gray-500">{app.checked_in_at ? new Date(app.checked_in_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
+                      <p className="text-xs font-bold text-[#0e0e1b]">{app.candidate?.full_name || 'Kandidat'}</p>
+                      <span className="text-[10px] text-[#505095]">{app.checked_in_at ? new Date(app.checked_in_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
                     </div>
                   </div>
                   <span className="text-[10px] font-black text-orange-600 uppercase">Waiting</span>
                 </div>
               ))}
-              {queue.length === 0 && <p className="text-center text-gray-400 text-xs py-4">Belum ada antrean baru.</p>}
+              {queue.length === 0 && <p className="text-center text-[#505095] text-xs py-4">Belum ada antrean baru.</p>}
             </div>
           </div>
         </div>
@@ -590,26 +591,25 @@ interface AdminViewProps {
 
 function AdminView({ profile, selectedResult, setSelectedResult, formatTime }: AdminViewProps) {
   const { jobAnalytics, todayStats, completedApps, loading } = useAnalytics();
-  const { jobs } = useJobs();
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+      <div className="min-h-screen bg-[#f6f6f8] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[#3636e2] animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#f6f6f8]">
       <Navbar profile={profile} />
       <main className="max-w-7xl mx-auto p-6 space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h2 className="text-3xl font-black text-slate-900 tracking-tighter">Dashboard Analitik</h2>
-            <p className="text-gray-500 text-sm">Monitor performa rekrutmen secara real-time.</p>
+            <h2 className="text-3xl font-black text-[#0e0e1b] tracking-tighter">Dashboard Analitik</h2>
+            <p className="text-[#505095] text-sm">Monitor performa rekrutmen secara real-time.</p>
           </div>
-          <button className="flex items-center gap-2 bg-indigo-600 text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-all">
+          <button className="flex items-center gap-2 bg-[#3636e2] text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-[#3636e2]/20 hover:bg-[#2828c4] transition-all">
             <Download className="w-4 h-4" /> Download Report (CSV)
           </button>
         </div>
@@ -617,32 +617,32 @@ function AdminView({ profile, selectedResult, setSelectedResult, formatTime }: A
         {/* Analytics Panel */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase">Rata-rata Skor</p>
+            <p className="text-xs font-bold text-[#505095] uppercase">Rata-rata Skor</p>
             <div className="flex items-end gap-2 mt-2">
-              <h3 className="text-4xl font-black text-indigo-600">{todayStats?.avg_score?.toFixed(1) || '0.0'}</h3>
-              <span className="text-gray-400 font-bold mb-1">/ 5.0</span>
+              <h3 className="text-4xl font-black text-[#3636e2]">{todayStats?.avg_score?.toFixed(1) || '0.0'}</h3>
+              <span className="text-[#505095] font-bold mb-1">/ 5.0</span>
             </div>
             <div className="mt-4 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div className="h-full bg-indigo-500" style={{ width: `${((todayStats?.avg_score || 0) / 5) * 100}%` }} />
+              <div className="h-full bg-[#3636e2]" style={{ width: `${((todayStats?.avg_score || 0) / 5) * 100}%` }} />
             </div>
           </div>
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase">Durasi Rata-rata</p>
-            <h3 className="text-4xl font-black text-gray-800 mt-2">{formatTime(todayStats?.avg_duration_seconds || 0)}</h3>
-            <p className="text-xs text-green-600 font-bold mt-2 flex items-center gap-1">
+            <p className="text-xs font-bold text-[#505095] uppercase">Durasi Rata-rata</p>
+            <h3 className="text-4xl font-black text-[#0e0e1b] mt-2">{formatTime(todayStats?.avg_duration_seconds || 0)}</h3>
+            <p className="text-xs text-emerald-600 font-bold mt-2 flex items-center gap-1">
               <TrendingUp className="w-3 h-3" /> {todayStats?.completed_today || 0} selesai hari ini
             </p>
           </div>
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase">Popularitas Posisi</p>
+            <p className="text-xs font-bold text-[#505095] uppercase">Popularitas Posisi</p>
             <div className="mt-3 space-y-2">
               {jobAnalytics.slice(0, 5).map(j => (
                 <div key={j.job_id} className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-gray-500 w-24 truncate">{j.job_title}</span>
+                  <span className="text-[10px] font-bold text-[#505095] w-24 truncate">{j.job_title}</span>
                   <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-orange-400" style={{ width: `${Math.min((j.total_applicants / 15) * 100, 100)}%` }} />
+                    <div className="h-full bg-purple-500" style={{ width: `${Math.min((j.total_applicants / 15) * 100, 100)}%` }} />
                   </div>
-                  <span className="text-[10px] font-bold text-gray-400">{j.total_applicants}</span>
+                  <span className="text-[10px] font-bold text-[#505095]">{j.total_applicants}</span>
                 </div>
               ))}
             </div>
@@ -652,15 +652,15 @@ function AdminView({ profile, selectedResult, setSelectedResult, formatTime }: A
         {/* History Table */}
         <div className="bg-white rounded-[40px] shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-8 border-b flex items-center justify-between">
-            <h3 className="font-black text-xl text-gray-800">Riwayat Peserta</h3>
-            <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-xl">
-              <Search className="w-4 h-4 text-gray-400" />
-              <input type="text" placeholder="Search..." className="bg-transparent border-none outline-none text-sm w-40 text-gray-900" />
+            <h3 className="font-black text-xl text-[#0e0e1b]">Riwayat Peserta</h3>
+            <div className="flex items-center gap-2 bg-[#f6f6f8] px-4 py-2 rounded-xl">
+              <Search className="w-4 h-4 text-[#505095]" />
+              <input type="text" placeholder="Search..." className="bg-transparent border-none outline-none text-sm w-40 text-[#0e0e1b]" />
             </div>
           </div>
           <div className="overflow-x-auto px-4 pb-4">
             <table className="w-full text-left">
-              <thead className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] border-b">
+              <thead className="text-[10px] font-black text-[#505095] uppercase tracking-[0.2em] border-b">
                 <tr>
                   <th className="p-6">Nomor</th>
                   <th className="p-6">Nama</th>
@@ -672,13 +672,13 @@ function AdminView({ profile, selectedResult, setSelectedResult, formatTime }: A
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {completedApps.map(app => (
-                  <tr key={app.id} className="hover:bg-slate-50/50 transition-colors group">
-                    <td className="p-6 font-black text-indigo-900">{app.queue_number}</td>
-                    <td className="p-6 text-sm font-bold text-gray-600">{app.candidate?.full_name || '-'}</td>
-                    <td className="p-6 text-sm text-gray-600">{app.job?.title || '-'}</td>
-                    <td className="p-6 font-mono text-xs text-slate-500">{app.duration ? formatTime(app.duration) : '--:--'}</td>
+                  <tr key={app.id} className="hover:bg-[#f6f6f8]/50 transition-colors group">
+                    <td className="p-6 font-black text-[#3636e2]">{app.queue_number}</td>
+                    <td className="p-6 text-sm font-bold text-[#0e0e1b]">{app.candidate?.full_name || '-'}</td>
+                    <td className="p-6 text-sm text-[#505095]">{app.job?.title || '-'}</td>
+                    <td className="p-6 font-mono text-xs text-[#505095]">{app.duration ? formatTime(app.duration) : '--:--'}</td>
                     <td className="p-6">
-                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${app.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                      <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${app.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'}`}>
                         {app.status}
                       </span>
                     </td>
@@ -686,7 +686,7 @@ function AdminView({ profile, selectedResult, setSelectedResult, formatTime }: A
                       <button
                         onClick={() => app.score_summary && setSelectedResult(app)}
                         disabled={!app.score_summary}
-                        className="p-2 text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                        className="p-2 text-gray-300 hover:text-[#3636e2] hover:bg-[#3636e2]/10 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                       >
                         <Eye className="w-5 h-5" />
                       </button>
@@ -703,22 +703,22 @@ function AdminView({ profile, selectedResult, setSelectedResult, formatTime }: A
       {selectedResult && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md">
           <div className="bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden">
-            <div className="p-8 border-b bg-indigo-50/50 flex justify-between items-center">
-              <h3 className="text-2xl font-black text-indigo-950">Detail Penilaian</h3>
+            <div className="p-8 border-b bg-[#3636e2]/5 flex justify-between items-center">
+              <h3 className="text-2xl font-black text-[#0e0e1b]">Detail Penilaian</h3>
               <button onClick={() => setSelectedResult(null)} className="p-2 hover:bg-white rounded-full transition-all">
-                <X className="text-gray-400 w-5 h-5" />
+                <X className="text-[#505095] w-5 h-5" />
               </button>
             </div>
             <div className="p-8 space-y-6">
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-2xl">
-                  <p className="text-[10px] font-black text-gray-400 uppercase">Candidate</p>
-                  <p className="text-xl font-bold text-gray-900">{selectedResult.queue_number}</p>
-                  <p className="text-sm text-gray-500">{selectedResult.candidate?.full_name}</p>
+                <div className="bg-[#f6f6f8] p-4 rounded-2xl">
+                  <p className="text-[10px] font-black text-[#505095] uppercase">Candidate</p>
+                  <p className="text-xl font-bold text-[#0e0e1b]">{selectedResult.queue_number}</p>
+                  <p className="text-sm text-[#505095]">{selectedResult.candidate?.full_name}</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-2xl">
-                  <p className="text-[10px] font-black text-gray-400 uppercase">Duration</p>
-                  <p className="text-xl font-bold text-gray-900">{formatTime(selectedResult.duration || 0)}</p>
+                <div className="bg-[#f6f6f8] p-4 rounded-2xl">
+                  <p className="text-[10px] font-black text-[#505095] uppercase">Duration</p>
+                  <p className="text-xl font-bold text-[#0e0e1b]">{formatTime(selectedResult.duration || 0)}</p>
                 </div>
               </div>
               <div className="space-y-3">
@@ -726,9 +726,9 @@ function AdminView({ profile, selectedResult, setSelectedResult, formatTime }: A
                 <StarRating label="Communication" value={selectedResult.score_summary?.communication || 0} readOnly />
                 <StarRating label="Attitude" value={selectedResult.score_summary?.attitude || 0} readOnly />
               </div>
-              <div className="p-5 bg-indigo-50 rounded-3xl border border-indigo-100">
-                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 italic">Reviewer Note</p>
-                <p className="text-sm font-medium text-indigo-900 italic">&quot;{selectedResult.score_summary?.notes || 'No notes provided.'}&quot;</p>
+              <div className="p-5 bg-[#3636e2]/5 rounded-3xl border border-[#3636e2]/10">
+                <p className="text-[10px] font-black text-[#3636e2] uppercase tracking-widest mb-2 italic">Reviewer Note</p>
+                <p className="text-sm font-medium text-[#0e0e1b] italic">&quot;{selectedResult.score_summary?.notes || 'No notes provided.'}&quot;</p>
               </div>
               <button onClick={() => setSelectedResult(null)} className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black hover:bg-slate-800 transition-all">Close Dashboard</button>
             </div>
@@ -747,7 +747,7 @@ const StarRating = ({ label, value, onChange, readOnly = false }: {
   readOnly?: boolean
 }) => (
   <div className="flex items-center justify-between">
-    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{label}</label>
+    <label className="text-[10px] font-black text-[#505095] uppercase tracking-widest">{label}</label>
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((num) => (
         <Star
