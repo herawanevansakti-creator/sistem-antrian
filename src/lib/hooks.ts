@@ -198,31 +198,20 @@ export function useActiveSession(interviewerId: string | null) {
         }
 
         async function fetchActiveSession() {
-            // Get assigned application for this interviewer via sessions
-            const { data: session } = await supabase
-                .from('sessions')
-                .select('application:applications(*, job:jobs(*), candidate:profiles(*))')
-                .eq('interviewer_id', interviewerId)
-                .is('ended_at', null)
-                .order('started_at', { ascending: false })
+            // Alternative: check applications table for assigned status directly
+            // This is simpler and avoids nested query type issues
+            const { data: app } = await supabase
+                .from('applications')
+                .select('*, job:jobs(*), candidate:profiles(*)')
+                .eq('status', 'assigned')
+                .order('checked_in_at', { ascending: true })
                 .limit(1)
                 .single();
 
-            if (session?.application) {
-                setActiveApp(session.application as Application);
+            if (app) {
+                setActiveApp(app as Application);
             } else {
-                // Alternative: check applications table for assigned status
-                const { data: app } = await supabase
-                    .from('applications')
-                    .select('*, job:jobs(*), candidate:profiles(*)')
-                    .eq('status', 'assigned')
-                    .order('checked_in_at', { ascending: true })
-                    .limit(1)
-                    .single();
-
-                if (app) {
-                    setActiveApp(app as Application);
-                }
+                setActiveApp(null);
             }
             setLoading(false);
         }
