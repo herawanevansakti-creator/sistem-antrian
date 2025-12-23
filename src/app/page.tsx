@@ -130,6 +130,14 @@ function MainApp() {
           formatTime={formatTime}
         />
       )}
+
+      {/* Fallback: if role doesn't match, default to candidate */}
+      {profile.role !== 'candidate' && profile.role !== 'interviewer' && profile.role !== 'admin' && (
+        <CandidateDashboard
+          profile={profile}
+          notify={notify}
+        />
+      )}
     </div>
   );
 }
