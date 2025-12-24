@@ -28,14 +28,20 @@ export function useProfile(userId: string | null) {
         }
 
         async function fetchProfile() {
+            console.log('[useProfile] Fetching profile for userId:', userId);
             const { data, error } = await supabase
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
                 .single();
 
+            console.log('[useProfile] Result:', { data, error });
+
             if (!error && data) {
+                console.log('[useProfile] Profile loaded - Role:', data.role);
                 setProfile(data as Profile);
+            } else {
+                console.log('[useProfile] No profile found or error');
             }
             setLoading(false);
         }

@@ -25,6 +25,8 @@ import {
 
 import LandingPage from '@/components/LandingPage';
 import CandidateDashboard from '@/components/CandidateDashboard';
+import InterviewerDashboard from '@/components/InterviewerDashboard';
+import RoleSwitcher from '@/components/RoleSwitcher';
 import {
   useProfile,
   useJobs,
@@ -104,6 +106,11 @@ function MainApp() {
         </div>
       )}
 
+      {/* Dev Role Switcher */}
+      <div className="fixed top-4 right-4 z-[300]">
+        <RoleSwitcher currentRole={profile.role} onRoleChanged={() => window.location.reload()} />
+      </div>
+
       {profile.role === 'candidate' && (
         <CandidateDashboard
           profile={profile}
@@ -112,13 +119,9 @@ function MainApp() {
       )}
 
       {profile.role === 'interviewer' && (
-        <InterviewerView
+        <InterviewerDashboard
           profile={profile}
           notify={notify}
-          interviewTime={interviewTime}
-          setInterviewTime={setInterviewTime}
-          timerRef={timerRef}
-          formatTime={formatTime}
         />
       )}
 
