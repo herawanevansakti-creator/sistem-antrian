@@ -3,6 +3,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UserButton } from '@clerk/nextjs';
 import {
+    LayoutDashboard,
+    Users,
+    BarChart3,
+    Settings,
+    Infinity,
+    Play,
+    Pause,
+    Plus,
+    FileText,
+    Clock,
+    CheckCircle2,
+    Star,
+    Bold,
+    Italic,
+    List,
+    Code,
+    Mic,
+    Smile,
+    Edit3,
+    Check,
+    UserPlus
+} from 'lucide-react';
+import {
     useQueue,
     useActiveSession,
     requestNextCandidate,
@@ -123,14 +146,26 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
 
     // Star Rating Component
     const StarRating = ({ value, onChange }: { value: number; onChange: (v: number) => void }) => (
-        <div className="flex gap-1">
+        <div style={{ display: 'flex', gap: '4px' }}>
             {[1, 2, 3, 4, 5].map((num) => (
                 <button
                     key={num}
                     onClick={() => onChange(num)}
-                    className={`hover:scale-110 transition-transform ${value >= num ? 'text-[#3636e2]' : 'text-slate-300 dark:text-slate-700 hover:text-[#3636e2]'}`}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0,
+                        transition: 'transform 0.15s'
+                    }}
+                    onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
+                    onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
                 >
-                    <span className={`material-symbols-outlined ${value >= num ? 'filled' : ''}`}>star</span>
+                    <Star
+                        size={20}
+                        fill={value >= num ? '#3636e2' : 'none'}
+                        color={value >= num ? '#3636e2' : '#cbd5e1'}
+                    />
                 </button>
             ))}
         </div>
@@ -138,227 +173,484 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
 
     if (sessionLoading) {
         return (
-            <div className="min-h-screen bg-[#f6f6f8] flex items-center justify-center">
-                <div className="text-center">
-                    <div className="w-12 h-12 border-4 border-[#3636e2] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-slate-500 font-medium">Loading...</p>
+            <div style={{
+                minHeight: '100vh',
+                background: '#f6f6f8',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+            }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{
+                        width: '48px',
+                        height: '48px',
+                        border: '4px solid #3636e2',
+                        borderTopColor: 'transparent',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                        margin: '0 auto 16px'
+                    }}></div>
+                    <p style={{ color: '#64748b', fontWeight: 500 }}>Loading...</p>
                 </div>
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
         );
     }
 
     return (
-        <div className="bg-[#f6f6f8] text-slate-900 font-[Inter,sans-serif] h-screen flex overflow-hidden selection:bg-[#3636e2]/20">
+        <div style={{
+            background: '#f6f6f8',
+            color: '#0f172a',
+            fontFamily: 'Inter, sans-serif',
+            height: '100vh',
+            display: 'flex',
+            overflow: 'hidden'
+        }}>
             {/* Sidebar Navigation */}
-            <aside className="w-64 flex-shrink-0 flex flex-col bg-white border-r border-slate-200 z-20">
-                <div className="p-6 flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-[#3636e2] to-blue-400 flex items-center justify-center text-white shadow-lg shadow-[#3636e2]/30">
-                        <span className="material-symbols-outlined text-2xl">all_inclusive</span>
+            <aside style={{
+                width: '256px',
+                flexShrink: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                background: '#ffffff',
+                borderRight: '1px solid #e2e8f0',
+                zIndex: 20
+            }}>
+                {/* Logo */}
+                <div style={{
+                    padding: '24px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                }}>
+                    <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '12px',
+                        background: 'linear-gradient(135deg, #3636e2, #60a5fa)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 4px 14px rgba(54, 54, 226, 0.3)'
+                    }}>
+                        <Infinity size={24} color="white" />
                     </div>
-                    <div className="flex flex-col">
-                        <h1 className="text-base font-bold leading-none tracking-tight">RecruitFlow</h1>
-                        <p className="text-xs text-slate-500 mt-1">Interviewer Portal</p>
+                    <div>
+                        <h1 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>RecruitFlow</h1>
+                        <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0' }}>Interviewer Portal</p>
                     </div>
                 </div>
 
-                <nav className="flex-1 px-4 flex flex-col gap-2 overflow-y-auto">
-                    <a className="flex items-center gap-3 px-3 py-3 rounded-lg bg-[#3636e2]/10 text-[#3636e2]" href="#">
-                        <span className="material-symbols-outlined filled">dashboard</span>
-                        <span className="text-sm font-medium">Dashboard</span>
+                {/* Navigation */}
+                <nav style={{ flex: 1, padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <a href="#" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        background: 'rgba(54, 54, 226, 0.1)',
+                        color: '#3636e2',
+                        textDecoration: 'none'
+                    }}>
+                        <LayoutDashboard size={20} />
+                        <span style={{ fontSize: '14px', fontWeight: 500 }}>Dashboard</span>
                     </a>
-                    <a className="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
-                        <span className="material-symbols-outlined">group</span>
-                        <span className="text-sm font-medium">Candidates</span>
+                    <a href="#" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        color: '#475569',
+                        textDecoration: 'none'
+                    }}>
+                        <Users size={20} />
+                        <span style={{ fontSize: '14px', fontWeight: 500 }}>Candidates</span>
                     </a>
-                    <a className="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
-                        <span className="material-symbols-outlined">bar_chart</span>
-                        <span className="text-sm font-medium">Analytics</span>
+                    <a href="#" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        color: '#475569',
+                        textDecoration: 'none'
+                    }}>
+                        <BarChart3 size={20} />
+                        <span style={{ fontSize: '14px', fontWeight: 500 }}>Analytics</span>
                     </a>
-                    <a className="flex items-center gap-3 px-3 py-3 rounded-lg text-slate-600 hover:bg-slate-50 transition-colors" href="#">
-                        <span className="material-symbols-outlined">settings</span>
-                        <span className="text-sm font-medium">Settings</span>
+                    <a href="#" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        color: '#475569',
+                        textDecoration: 'none'
+                    }}>
+                        <Settings size={20} />
+                        <span style={{ fontSize: '14px', fontWeight: 500 }}>Settings</span>
                     </a>
                 </nav>
 
-                <div className="p-4 border-t border-slate-200">
-                    <div className="flex items-center gap-3 px-3 py-2">
+                {/* User Profile */}
+                <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 12px' }}>
                         <UserButton afterSignOutUrl="/" />
-                        <div className="flex flex-col">
-                            <p className="text-sm font-medium leading-none">{profile.full_name || 'Interviewer'}</p>
-                            <p className="text-xs text-slate-500 mt-1">Senior Recruiter</p>
+                        <div>
+                            <p style={{ fontSize: '14px', fontWeight: 500, margin: 0 }}>{profile.full_name || 'Interviewer'}</p>
+                            <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0' }}>Senior Recruiter</p>
                         </div>
                     </div>
                 </div>
             </aside>
 
-            {/* Layout Container for Queue and Main Content */}
-            <div className="flex-1 flex overflow-hidden">
-                {/* Queue Sidebar (Middle Column) */}
-                <div className="w-80 flex-shrink-0 bg-[#f6f6f8] border-r border-slate-200 flex-col hidden lg:flex">
-                    <div className="p-5 pb-2">
-                        <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                            Today's Queue
-                            <span className="bg-[#3636e2]/10 text-[#3636e2] text-xs px-2 py-0.5 rounded-full font-bold">
+            {/* Layout Container */}
+            <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+                {/* Queue Panel (Middle) */}
+                <div style={{
+                    width: '320px',
+                    flexShrink: 0,
+                    background: '#f6f6f8',
+                    borderRight: '1px solid #e2e8f0',
+                    display: 'flex',
+                    flexDirection: 'column'
+                }}>
+                    {/* Queue Header */}
+                    <div style={{ padding: '20px 20px 8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Today's Queue</h2>
+                            <span style={{
+                                background: 'rgba(54, 54, 226, 0.1)',
+                                color: '#3636e2',
+                                fontSize: '12px',
+                                padding: '2px 8px',
+                                borderRadius: '12px',
+                                fontWeight: 700
+                            }}>
                                 {queue.length + (activeApp ? 1 : 0)}
                             </span>
-                        </h2>
-                        <p className="text-xs text-slate-500 mt-1">
+                        </div>
+                        <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
                             {activeApp ? 'Now interviewing' : queue.length > 0 ? 'Next up for interview' : 'No candidates waiting'}
                         </p>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto px-3 py-2 flex flex-col gap-2">
-                        {/* Active Item (Current) */}
+                    {/* Queue List */}
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {/* Active Interview */}
                         {activeApp && (
-                            <div className="p-3 bg-white rounded-xl shadow-sm border-l-4 border-[#3636e2] ring-1 ring-slate-200">
-                                <div className="flex items-start gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#3636e2] to-purple-500 flex-shrink-0 flex items-center justify-center text-white font-bold">
+                            <div style={{
+                                padding: '12px',
+                                background: '#ffffff',
+                                borderRadius: '12px',
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                borderLeft: '4px solid #3636e2'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #3636e2, #a855f7)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'white',
+                                        fontWeight: 700,
+                                        fontSize: '14px'
+                                    }}>
                                         {activeApp.candidate?.full_name?.charAt(0) || 'C'}
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-bold text-slate-900 truncate">
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <p style={{ fontSize: '14px', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                             {activeApp.candidate?.full_name || 'Kandidat'}
                                         </p>
-                                        <p className="text-xs text-[#3636e2] font-medium mt-0.5">Interviewing Now</p>
+                                        <p style={{ fontSize: '12px', color: '#3636e2', fontWeight: 500, marginTop: '2px' }}>Interviewing Now</p>
                                     </div>
-                                    <span className="relative flex h-2.5 w-2.5 mt-1.5">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#3636e2] opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#3636e2]"></span>
-                                    </span>
+                                    <div style={{
+                                        width: '10px',
+                                        height: '10px',
+                                        borderRadius: '50%',
+                                        background: '#3636e2',
+                                        animation: 'pulse 2s infinite'
+                                    }}></div>
                                 </div>
                             </div>
                         )}
 
-                        {/* Waiting Items */}
-                        {queue.map((app, index) => (
-                            <div key={app.id} className="p-3 hover:bg-white rounded-xl transition-colors cursor-pointer group">
-                                <div className="flex items-start gap-3">
-                                    <div className="h-10 w-10 rounded-full bg-slate-100 flex-shrink-0 opacity-80 flex items-center justify-center text-slate-600 font-medium">
+                        {/* Waiting Queue */}
+                        {queue.map((app) => (
+                            <div key={app.id} style={{
+                                padding: '12px',
+                                borderRadius: '12px',
+                                cursor: 'pointer'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                                    <div style={{
+                                        width: '40px',
+                                        height: '40px',
+                                        borderRadius: '50%',
+                                        background: '#f1f5f9',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: '#475569',
+                                        fontWeight: 500,
+                                        fontSize: '14px'
+                                    }}>
                                         {app.candidate?.full_name?.charAt(0) || 'C'}
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-slate-700 truncate group-hover:text-[#3636e2] transition-colors">
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <p style={{ fontSize: '14px', fontWeight: 500, margin: 0, color: '#475569' }}>
                                             {app.candidate?.full_name || 'Kandidat'}
                                         </p>
-                                        <p className="text-xs text-slate-500 mt-0.5">
+                                        <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
                                             Waiting {getWaitingTime(app.checked_in_at)}
                                         </p>
                                     </div>
-                                    <div className="flex items-center justify-center h-5 w-5 rounded-full bg-green-100 text-green-600 mt-1">
-                                        <span className="material-symbols-outlined text-[14px]">check</span>
+                                    <div style={{
+                                        width: '20px',
+                                        height: '20px',
+                                        borderRadius: '50%',
+                                        background: '#dcfce7',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <Check size={12} color="#16a34a" />
                                     </div>
                                 </div>
                             </div>
                         ))}
 
                         {queue.length === 0 && !activeApp && (
-                            <div className="text-center py-8 text-slate-400 text-xs">
+                            <p style={{ textAlign: 'center', padding: '32px 0', color: '#94a3b8', fontSize: '12px' }}>
                                 No candidates in queue
-                            </div>
+                            </p>
                         )}
                     </div>
 
-                    <div className="p-4 border-t border-slate-200">
-                        <button className="w-full py-2 px-4 border border-dashed border-slate-300 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:border-[#3636e2] hover:text-[#3636e2] transition-all flex items-center justify-center gap-2">
-                            <span className="material-symbols-outlined text-lg">add</span>
+                    {/* Add Walk-in */}
+                    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0' }}>
+                        <button style={{
+                            width: '100%',
+                            padding: '8px 16px',
+                            border: '2px dashed #cbd5e1',
+                            borderRadius: '8px',
+                            background: 'transparent',
+                            color: '#475569',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                        }}>
+                            <Plus size={16} />
                             Add Walk-in
                         </button>
                     </div>
                 </div>
 
-                {/* Main Active Interview Workspace */}
-                <main className="flex-1 flex flex-col h-full bg-[#f6f6f8] overflow-hidden relative">
+                {/* Main Workspace */}
+                <main style={{
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
+                    background: '#f6f6f8',
+                    overflow: 'hidden',
+                    position: 'relative'
+                }}>
                     {activeApp ? (
                         <>
                             {/* Header */}
-                            <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between flex-shrink-0 z-10">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-14 w-14 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center text-[#3636e2] text-xl font-bold shadow-inner">
+                            <header style={{
+                                background: '#ffffff',
+                                borderBottom: '1px solid #e2e8f0',
+                                padding: '16px 24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                flexShrink: 0
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                    <div style={{
+                                        width: '56px',
+                                        height: '56px',
+                                        borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #e2e8f0, #cbd5e1)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: '#3636e2',
+                                        fontSize: '20px',
+                                        fontWeight: 700
+                                    }}>
                                         {activeApp.candidate?.full_name?.charAt(0) || 'C'}
                                     </div>
                                     <div>
-                                        <div className="flex items-center gap-3">
-                                            <h2 className="text-xl font-bold text-slate-900">
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>
                                                 Interviewing: {activeApp.candidate?.full_name || 'Kandidat'}
                                             </h2>
-                                            <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold uppercase tracking-wider">
+                                            <span style={{
+                                                padding: '2px 10px',
+                                                borderRadius: '20px',
+                                                background: '#dbeafe',
+                                                color: '#1d4ed8',
+                                                fontSize: '12px',
+                                                fontWeight: 600,
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '0.05em'
+                                            }}>
                                                 Live
                                             </span>
                                         </div>
-                                        <p className="text-sm text-slate-500">
-                                            {activeApp.job?.title || 'Position'} Candidate • {activeApp.queue_number || 'Queue'}
+                                        <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px' }}>
+                                            {activeApp.job?.title || 'Position'} Candidate
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3">
-                                    <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
-                                        <span className="material-symbols-outlined text-lg">description</span>
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <button style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        padding: '8px 16px',
+                                        borderRadius: '8px',
+                                        background: '#f1f5f9',
+                                        border: 'none',
+                                        color: '#475569',
+                                        fontSize: '14px',
+                                        fontWeight: 500,
+                                        cursor: 'pointer'
+                                    }}>
+                                        <FileText size={18} />
                                         View Resume
                                     </button>
-                                    <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors">
-                                        <span className="material-symbols-outlined text-lg">history</span>
+                                    <button style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        padding: '8px 16px',
+                                        borderRadius: '8px',
+                                        background: '#f1f5f9',
+                                        border: 'none',
+                                        color: '#475569',
+                                        fontSize: '14px',
+                                        fontWeight: 500,
+                                        cursor: 'pointer'
+                                    }}>
+                                        <Clock size={18} />
                                         History
                                     </button>
                                 </div>
                             </header>
 
                             {/* Scrollable Content */}
-                            <div className="flex-1 overflow-y-auto p-6 pb-24">
-                                <div className="max-w-5xl mx-auto flex flex-col gap-6">
-                                    {/* Timer & Controls */}
-                                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden group">
-                                        <div className="absolute top-0 left-0 w-1 h-full bg-[#3636e2]"></div>
-                                        <div className="flex flex-col md:flex-row items-center gap-6 z-10">
-                                            <div className="relative flex items-center justify-center">
-                                                {/* Decorative Timer Ring */}
-                                                <svg className="w-24 h-24 transform -rotate-90">
+                            <div style={{ flex: 1, overflowY: 'auto', padding: '24px', paddingBottom: '100px' }}>
+                                <div style={{ maxWidth: '1024px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                                    {/* Timer Section */}
+                                    <div style={{
+                                        background: '#ffffff',
+                                        borderRadius: '16px',
+                                        padding: '24px',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                        border: '1px solid #e2e8f0',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        position: 'relative',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '4px',
+                                            height: '100%',
+                                            background: '#3636e2'
+                                        }}></div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', paddingLeft: '16px' }}>
+                                            {/* Timer Ring */}
+                                            <div style={{ position: 'relative', width: '96px', height: '96px' }}>
+                                                <svg style={{ width: '96px', height: '96px', transform: 'rotate(-90deg)' }}>
                                                     <circle
-                                                        className="text-slate-100"
                                                         cx="48"
                                                         cy="48"
-                                                        fill="transparent"
                                                         r="40"
-                                                        stroke="currentColor"
+                                                        fill="transparent"
+                                                        stroke="#f1f5f9"
                                                         strokeWidth="6"
                                                     />
                                                     <circle
-                                                        className="text-[#3636e2] transition-all duration-1000 ease-linear"
                                                         cx="48"
                                                         cy="48"
-                                                        fill="transparent"
                                                         r="40"
-                                                        stroke="currentColor"
+                                                        fill="transparent"
+                                                        stroke="#3636e2"
+                                                        strokeWidth="6"
                                                         strokeDasharray="251.2"
                                                         strokeDashoffset={getProgressOffset()}
-                                                        strokeWidth="6"
+                                                        style={{ transition: 'stroke-dashoffset 1s linear' }}
                                                     />
                                                 </svg>
-                                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                    <span className="text-2xl font-bold font-mono text-slate-900 tracking-tighter">
+                                                <div style={{
+                                                    position: 'absolute',
+                                                    inset: 0,
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center'
+                                                }}>
+                                                    <span style={{ fontSize: '24px', fontWeight: 700, fontFamily: 'monospace', color: '#0f172a' }}>
                                                         {getRemainingTime()}
                                                     </span>
-                                                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                                                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                                                         Remaining
                                                     </span>
                                                 </div>
                                             </div>
-                                            <div className="text-center md:text-left">
-                                                <h3 className="text-lg font-semibold text-slate-900">Technical Deep Dive</h3>
-                                                <p className="text-sm text-slate-500">Current Phase • Planned duration: 45 min</p>
+                                            <div>
+                                                <h3 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Technical Deep Dive</h3>
+                                                <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px' }}>Current Phase • Planned duration: 45 min</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-3 z-10">
+                                        <div style={{ display: 'flex', gap: '12px' }}>
                                             <button
                                                 onClick={() => setIsPaused(!isPaused)}
-                                                className="h-10 w-10 rounded-full flex items-center justify-center bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-                                                title={isPaused ? "Resume Timer" : "Pause Timer"}
+                                                style={{
+                                                    width: '40px',
+                                                    height: '40px',
+                                                    borderRadius: '50%',
+                                                    background: '#f1f5f9',
+                                                    border: 'none',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    cursor: 'pointer',
+                                                    color: '#475569'
+                                                }}
                                             >
-                                                <span className="material-symbols-outlined">{isPaused ? 'play_arrow' : 'pause'}</span>
+                                                {isPaused ? <Play size={20} /> : <Pause size={20} />}
                                             </button>
                                             <button
                                                 onClick={() => notify("Waktu ditambah 5 menit")}
-                                                className="h-10 px-4 rounded-full flex items-center justify-center bg-slate-100 text-slate-600 text-sm font-medium hover:bg-slate-200 transition-colors"
-                                                title="Add Time"
+                                                style={{
+                                                    height: '40px',
+                                                    padding: '0 16px',
+                                                    borderRadius: '20px',
+                                                    background: '#f1f5f9',
+                                                    border: 'none',
+                                                    fontSize: '14px',
+                                                    fontWeight: 500,
+                                                    cursor: 'pointer',
+                                                    color: '#475569'
+                                                }}
                                             >
                                                 + 5m
                                             </button>
@@ -366,21 +658,38 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                     </div>
 
                                     {/* Scoring Grid */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        {/* Card 1 - Technical Skill */}
-                                        <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col gap-3">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2 text-slate-700 font-medium">
-                                                    <span className="material-symbols-outlined text-blue-500">code</span>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+                                        {/* Technical */}
+                                        <div style={{
+                                            background: '#ffffff',
+                                            borderRadius: '12px',
+                                            padding: '20px',
+                                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                            border: '1px solid #e2e8f0'
+                                        }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500 }}>
+                                                    <Code size={18} color="#3b82f6" />
                                                     Technical Skill
                                                 </div>
-                                                <span className={`text-sm font-bold ${scores.technical > 0 ? 'text-[#3636e2]' : 'text-slate-400'}`}>
+                                                <span style={{ fontSize: '14px', fontWeight: 700, color: scores.technical > 0 ? '#3636e2' : '#94a3b8' }}>
                                                     {scores.technical}/5
                                                 </span>
                                             </div>
                                             <StarRating value={scores.technical} onChange={(v) => setScores({ ...scores, technical: v })} />
                                             <textarea
-                                                className="w-full mt-2 text-xs p-2 bg-[#f6f6f8] rounded border border-transparent focus:border-[#3636e2] focus:ring-0 resize-none text-slate-600"
+                                                style={{
+                                                    width: '100%',
+                                                    marginTop: '12px',
+                                                    padding: '8px',
+                                                    background: '#f6f6f8',
+                                                    border: '1px solid transparent',
+                                                    borderRadius: '8px',
+                                                    fontSize: '12px',
+                                                    resize: 'none',
+                                                    outline: 'none',
+                                                    color: '#475569'
+                                                }}
                                                 placeholder="Note on technical ability..."
                                                 rows={2}
                                                 value={technicalNote}
@@ -388,20 +697,37 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                             />
                                         </div>
 
-                                        {/* Card 2 - Communication */}
-                                        <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col gap-3">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2 text-slate-700 font-medium">
-                                                    <span className="material-symbols-outlined text-purple-500">record_voice_over</span>
+                                        {/* Communication */}
+                                        <div style={{
+                                            background: '#ffffff',
+                                            borderRadius: '12px',
+                                            padding: '20px',
+                                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                            border: '1px solid #e2e8f0'
+                                        }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500 }}>
+                                                    <Mic size={18} color="#a855f7" />
                                                     Communication
                                                 </div>
-                                                <span className={`text-sm font-bold ${scores.communication > 0 ? 'text-[#3636e2]' : 'text-slate-400'}`}>
+                                                <span style={{ fontSize: '14px', fontWeight: 700, color: scores.communication > 0 ? '#3636e2' : '#94a3b8' }}>
                                                     {scores.communication}/5
                                                 </span>
                                             </div>
                                             <StarRating value={scores.communication} onChange={(v) => setScores({ ...scores, communication: v })} />
                                             <textarea
-                                                className="w-full mt-2 text-xs p-2 bg-[#f6f6f8] rounded border border-transparent focus:border-[#3636e2] focus:ring-0 resize-none text-slate-600"
+                                                style={{
+                                                    width: '100%',
+                                                    marginTop: '12px',
+                                                    padding: '8px',
+                                                    background: '#f6f6f8',
+                                                    border: '1px solid transparent',
+                                                    borderRadius: '8px',
+                                                    fontSize: '12px',
+                                                    resize: 'none',
+                                                    outline: 'none',
+                                                    color: '#475569'
+                                                }}
                                                 placeholder="Note on communication..."
                                                 rows={2}
                                                 value={communicationNote}
@@ -409,20 +735,37 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                             />
                                         </div>
 
-                                        {/* Card 3 - Attitude */}
-                                        <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex flex-col gap-3">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2 text-slate-700 font-medium">
-                                                    <span className="material-symbols-outlined text-green-500">sentiment_satisfied</span>
+                                        {/* Attitude */}
+                                        <div style={{
+                                            background: '#ffffff',
+                                            borderRadius: '12px',
+                                            padding: '20px',
+                                            boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                            border: '1px solid #e2e8f0'
+                                        }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500 }}>
+                                                    <Smile size={18} color="#22c55e" />
                                                     Attitude
                                                 </div>
-                                                <span className={`text-sm font-bold ${scores.attitude > 0 ? 'text-[#3636e2]' : 'text-slate-400'}`}>
+                                                <span style={{ fontSize: '14px', fontWeight: 700, color: scores.attitude > 0 ? '#3636e2' : '#94a3b8' }}>
                                                     {scores.attitude}/5
                                                 </span>
                                             </div>
                                             <StarRating value={scores.attitude} onChange={(v) => setScores({ ...scores, attitude: v })} />
                                             <textarea
-                                                className="w-full mt-2 text-xs p-2 bg-[#f6f6f8] rounded border border-transparent focus:border-[#3636e2] focus:ring-0 resize-none text-slate-600"
+                                                style={{
+                                                    width: '100%',
+                                                    marginTop: '12px',
+                                                    padding: '8px',
+                                                    background: '#f6f6f8',
+                                                    border: '1px solid transparent',
+                                                    borderRadius: '8px',
+                                                    fontSize: '12px',
+                                                    resize: 'none',
+                                                    outline: 'none',
+                                                    color: '#475569'
+                                                }}
                                                 placeholder="Note on attitude..."
                                                 rows={2}
                                                 value={attitudeNote}
@@ -432,69 +775,136 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                     </div>
 
                                     {/* Internal Notes */}
-                                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
-                                        <div className="px-5 py-3 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                                            <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                                                <span className="material-symbols-outlined text-slate-400">edit_note</span>
+                                    <div style={{
+                                        background: '#ffffff',
+                                        borderRadius: '12px',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                                        border: '1px solid #e2e8f0',
+                                        overflow: 'hidden'
+                                    }}>
+                                        <div style={{
+                                            padding: '12px 20px',
+                                            borderBottom: '1px solid #e2e8f0',
+                                            background: '#f8fafc',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center'
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 700, color: '#475569' }}>
+                                                <Edit3 size={16} color="#94a3b8" />
                                                 Internal Notes
-                                            </h3>
-                                            <span className="text-xs text-slate-400">Auto-saved 2m ago</span>
+                                            </div>
+                                            <span style={{ fontSize: '12px', color: '#94a3b8' }}>Auto-saved 2m ago</span>
                                         </div>
-                                        <div className="p-4">
+                                        <div style={{ padding: '16px' }}>
                                             <textarea
-                                                className="w-full h-40 bg-transparent border-0 focus:ring-0 p-0 text-slate-700 placeholder:text-slate-400 leading-relaxed resize-none"
+                                                style={{
+                                                    width: '100%',
+                                                    height: '160px',
+                                                    border: 'none',
+                                                    outline: 'none',
+                                                    resize: 'none',
+                                                    fontSize: '14px',
+                                                    lineHeight: 1.6,
+                                                    color: '#475569'
+                                                }}
                                                 placeholder="Type your detailed assessment notes here. These will be shared with the hiring committee. Focus on key strengths, weaknesses, and specific project examples discussed during the interview..."
                                                 value={internalNotes}
                                                 onChange={(e) => setInternalNotes(e.target.value)}
                                             />
                                         </div>
-                                        <div className="px-4 py-2 bg-slate-50 border-t border-slate-200 flex gap-2">
-                                            <button className="p-1.5 rounded hover:bg-slate-200 text-slate-500" title="Bold">
-                                                <span className="material-symbols-outlined text-lg">format_bold</span>
+                                        <div style={{
+                                            padding: '8px 16px',
+                                            borderTop: '1px solid #e2e8f0',
+                                            background: '#f8fafc',
+                                            display: 'flex',
+                                            gap: '8px'
+                                        }}>
+                                            <button style={{ padding: '6px', borderRadius: '4px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }}>
+                                                <Bold size={14} />
                                             </button>
-                                            <button className="p-1.5 rounded hover:bg-slate-200 text-slate-500" title="Italic">
-                                                <span className="material-symbols-outlined text-lg">format_italic</span>
+                                            <button style={{ padding: '6px', borderRadius: '4px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }}>
+                                                <Italic size={14} />
                                             </button>
-                                            <button className="p-1.5 rounded hover:bg-slate-200 text-slate-500" title="List">
-                                                <span className="material-symbols-outlined text-lg">format_list_bulleted</span>
+                                            <button style={{ padding: '6px', borderRadius: '4px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#64748b' }}>
+                                                <List size={14} />
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Sticky Action Footer */}
-                            <footer className="absolute bottom-0 left-0 w-full bg-white border-t border-slate-200 p-4 shadow-lg z-20">
-                                <div className="max-w-5xl mx-auto flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer select-none">
-                                            <input
-                                                type="checkbox"
-                                                checked={flagForReview}
-                                                onChange={(e) => setFlagForReview(e.target.checked)}
-                                                className="rounded border-slate-300 text-[#3636e2] focus:ring-[#3636e2] h-4 w-4"
-                                            />
-                                            Flag for review
-                                        </label>
-                                    </div>
-                                    <div className="flex items-center gap-3">
+                            {/* Footer */}
+                            <footer style={{
+                                position: 'absolute',
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                background: '#ffffff',
+                                borderTop: '1px solid #e2e8f0',
+                                padding: '16px',
+                                boxShadow: '0 -4px 6px rgba(0,0,0,0.05)',
+                                zIndex: 20
+                            }}>
+                                <div style={{ maxWidth: '1024px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: '#475569', cursor: 'pointer' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={flagForReview}
+                                            onChange={(e) => setFlagForReview(e.target.checked)}
+                                            style={{ width: '16px', height: '16px', accentColor: '#3636e2' }}
+                                        />
+                                        Flag for review
+                                    </label>
+                                    <div style={{ display: 'flex', gap: '12px' }}>
                                         <button
                                             onClick={handleCompleteSession}
                                             disabled={processing}
-                                            className="px-6 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-medium text-sm hover:bg-slate-50 transition-colors disabled:opacity-50"
+                                            style={{
+                                                padding: '10px 24px',
+                                                borderRadius: '12px',
+                                                border: '1px solid #cbd5e1',
+                                                background: '#ffffff',
+                                                color: '#475569',
+                                                fontSize: '14px',
+                                                fontWeight: 500,
+                                                cursor: processing ? 'not-allowed' : 'pointer',
+                                                opacity: processing ? 0.5 : 1
+                                            }}
                                         >
                                             Pass Candidate
                                         </button>
                                         <button
                                             onClick={handleCompleteSession}
                                             disabled={processing}
-                                            className="px-6 py-2.5 rounded-xl bg-[#3636e2] text-white font-medium text-sm hover:bg-blue-700 shadow-lg shadow-[#3636e2]/30 transition-all flex items-center gap-2 disabled:opacity-50"
+                                            style={{
+                                                padding: '10px 24px',
+                                                borderRadius: '12px',
+                                                border: 'none',
+                                                background: '#3636e2',
+                                                color: '#ffffff',
+                                                fontSize: '14px',
+                                                fontWeight: 500,
+                                                cursor: processing ? 'not-allowed' : 'pointer',
+                                                opacity: processing ? 0.5 : 1,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                boxShadow: '0 4px 14px rgba(54, 54, 226, 0.3)'
+                                            }}
                                         >
                                             {processing ? (
-                                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                <div style={{
+                                                    width: '16px',
+                                                    height: '16px',
+                                                    border: '2px solid white',
+                                                    borderTopColor: 'transparent',
+                                                    borderRadius: '50%',
+                                                    animation: 'spin 1s linear infinite'
+                                                }}></div>
                                             ) : (
                                                 <>
-                                                    <span className="material-symbols-outlined text-lg">check_circle</span>
+                                                    <CheckCircle2 size={18} />
                                                     Save & End Session
                                                 </>
                                             )}
@@ -504,14 +914,29 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                             </footer>
                         </>
                     ) : (
-                        /* Empty State - Ready for Interview */
-                        <div className="flex-1 flex items-center justify-center p-6">
-                            <div className="text-center max-w-md">
-                                <div className="w-24 h-24 mx-auto mb-6 bg-[#3636e2]/10 rounded-full flex items-center justify-center">
-                                    <span className="material-symbols-outlined text-5xl text-[#3636e2]">play_circle</span>
+                        /* Empty State */
+                        <div style={{
+                            flex: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '24px'
+                        }}>
+                            <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+                                <div style={{
+                                    width: '96px',
+                                    height: '96px',
+                                    margin: '0 auto 24px',
+                                    background: 'rgba(54, 54, 226, 0.1)',
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}>
+                                    <Play size={48} color="#3636e2" fill="#3636e2" />
                                 </div>
-                                <h2 className="text-2xl font-bold text-slate-900 mb-2">Ready for Next Interview?</h2>
-                                <p className="text-slate-500 text-sm mb-8">
+                                <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 8px' }}>Ready for Next Interview?</h2>
+                                <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '32px' }}>
                                     {queue.length > 0
                                         ? `There are ${queue.length} candidate(s) waiting in the queue.`
                                         : 'No candidates in the queue yet. They will appear here once they check in.'
@@ -520,13 +945,34 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                 <button
                                     onClick={handleNextCandidate}
                                     disabled={processing || queue.length === 0}
-                                    className="px-8 py-3 bg-[#3636e2] text-white font-bold rounded-2xl shadow-xl shadow-[#3636e2]/30 hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+                                    style={{
+                                        padding: '12px 32px',
+                                        background: '#3636e2',
+                                        color: '#ffffff',
+                                        border: 'none',
+                                        borderRadius: '16px',
+                                        fontSize: '14px',
+                                        fontWeight: 700,
+                                        cursor: processing || queue.length === 0 ? 'not-allowed' : 'pointer',
+                                        opacity: processing || queue.length === 0 ? 0.5 : 1,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        boxShadow: '0 8px 24px rgba(54, 54, 226, 0.3)'
+                                    }}
                                 >
                                     {processing ? (
-                                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                        <div style={{
+                                            width: '20px',
+                                            height: '20px',
+                                            border: '2px solid white',
+                                            borderTopColor: 'transparent',
+                                            borderRadius: '50%',
+                                            animation: 'spin 1s linear infinite'
+                                        }}></div>
                                     ) : (
                                         <>
-                                            <span className="material-symbols-outlined">group_add</span>
+                                            <UserPlus size={20} />
                                             Call Next Candidate
                                         </>
                                     )}
@@ -536,6 +982,11 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                     )}
                 </main>
             </div>
+
+            <style>{`
+                @keyframes spin { to { transform: rotate(360deg); } }
+                @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+            `}</style>
         </div>
     );
 }
