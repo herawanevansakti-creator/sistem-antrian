@@ -7,7 +7,6 @@ import {
     Users,
     BarChart3,
     Settings,
-    Infinity,
     Play,
     Pause,
     Plus,
@@ -31,7 +30,7 @@ import {
     requestNextCandidate,
     completeInterviewSession
 } from '@/lib/hooks';
-import type { Profile, ScoreSummary } from '@/types';
+import type { Profile } from '@/types';
 
 interface InterviewerDashboardProps {
     profile: Profile;
@@ -86,7 +85,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
     }, [activeApp]);
 
     const getRemainingTime = (): string => {
-        const totalSeconds = 45 * 60; // 45 minutes
+        const totalSeconds = 30 * 60; // 30 menit untuk wawancara BPS
         const remaining = Math.max(0, totalSeconds - interviewTime);
         const mins = Math.floor(remaining / 60);
         const secs = remaining % 60;
@@ -95,7 +94,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
 
     // Calculate progress for SVG ring (0-251.2)
     const getProgressOffset = (): number => {
-        const totalSeconds = 45 * 60;
+        const totalSeconds = 30 * 60;
         const progress = Math.min(interviewTime / totalSeconds, 1);
         return 251.2 * (1 - progress);
     };
@@ -105,10 +104,10 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
         const result = await requestNextCandidate(profile.id);
 
         if (result.status === 'success') {
-            notify("Kandidat dipanggil!");
+            notify("Peserta berhasil dipanggil!");
             setInterviewTime(0);
         } else {
-            notify(result.message || "Tidak ada antrean.");
+            notify(result.message || "Tidak ada peserta dalam antrean.");
         }
         setProcessing(false);
     };
@@ -117,7 +116,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
         if (!activeApp) return;
 
         setProcessing(true);
-        const combinedNotes = `${internalNotes}\n\n---\nTechnical: ${technicalNote}\nCommunication: ${communicationNote}\nAttitude: ${attitudeNote}${flagForReview ? '\n\n⚠️ FLAGGED FOR REVIEW' : ''}`;
+        const combinedNotes = `${internalNotes}\n\n---\nKemampuan Teknis: ${technicalNote}\nKomunikasi: ${communicationNote}\nSikap: ${attitudeNote}${flagForReview ? '\n\n⚠️ PERLU DITINJAU ULANG' : ''}`;
 
         const result = await completeInterviewSession(
             activeApp.id,
@@ -127,9 +126,9 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
         );
 
         if (result.status === 'success') {
-            notify("Sesi wawancara selesai!");
+            notify("Wawancara selesai! Data berhasil disimpan.");
         } else {
-            notify(result.message || "Gagal menyimpan sesi.");
+            notify(result.message || "Gagal menyimpan hasil wawancara.");
         }
         setProcessing(false);
     };
@@ -140,8 +139,8 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
         const now = new Date();
         const diffMs = now.getTime() - checkedIn.getTime();
         const diffMins = Math.floor(diffMs / 60000);
-        if (diffMins < 1) return 'Just now';
-        return `${diffMins}m`;
+        if (diffMins < 1) return 'Baru saja';
+        return `${diffMins} menit`;
     };
 
     // Star Rating Component
@@ -190,7 +189,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                         animation: 'spin 1s linear infinite',
                         margin: '0 auto 16px'
                     }}></div>
-                    <p style={{ color: '#64748b', fontWeight: 500 }}>Loading...</p>
+                    <p style={{ color: '#64748b', fontWeight: 500 }}>Memuat data...</p>
                 </div>
                 <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             </div>
@@ -208,7 +207,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
         }}>
             {/* Sidebar Navigation */}
             <aside style={{
-                width: '256px',
+                width: '280px',
                 flexShrink: 0,
                 display: 'flex',
                 flexDirection: 'column',
@@ -224,20 +223,23 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                     gap: '12px'
                 }}>
                     <div style={{
-                        width: '40px',
-                        height: '40px',
+                        width: '48px',
+                        height: '48px',
                         borderRadius: '12px',
                         background: 'linear-gradient(135deg, #3636e2, #60a5fa)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
+                        fontSize: '18px',
+                        fontWeight: 700,
+                        color: 'white',
                         boxShadow: '0 4px 14px rgba(54, 54, 226, 0.3)'
                     }}>
-                        <Infinity size={24} color="white" />
+                        BPS
                     </div>
                     <div>
-                        <h1 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>RecruitFlow</h1>
-                        <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0' }}>Interviewer Portal</p>
+                        <h1 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>Sistem Wawancara</h1>
+                        <p style={{ fontSize: '11px', color: '#64748b', margin: '2px 0 0' }}>Portal Pewawancara</p>
                     </div>
                 </div>
 
@@ -254,7 +256,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                         textDecoration: 'none'
                     }}>
                         <LayoutDashboard size={20} />
-                        <span style={{ fontSize: '14px', fontWeight: 500 }}>Dashboard</span>
+                        <span style={{ fontSize: '14px', fontWeight: 500 }}>Dasbor</span>
                     </a>
                     <a href="#" style={{
                         display: 'flex',
@@ -266,7 +268,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                         textDecoration: 'none'
                     }}>
                         <Users size={20} />
-                        <span style={{ fontSize: '14px', fontWeight: 500 }}>Candidates</span>
+                        <span style={{ fontSize: '14px', fontWeight: 500 }}>Daftar Peserta</span>
                     </a>
                     <a href="#" style={{
                         display: 'flex',
@@ -278,7 +280,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                         textDecoration: 'none'
                     }}>
                         <BarChart3 size={20} />
-                        <span style={{ fontSize: '14px', fontWeight: 500 }}>Analytics</span>
+                        <span style={{ fontSize: '14px', fontWeight: 500 }}>Statistik</span>
                     </a>
                     <a href="#" style={{
                         display: 'flex',
@@ -290,7 +292,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                         textDecoration: 'none'
                     }}>
                         <Settings size={20} />
-                        <span style={{ fontSize: '14px', fontWeight: 500 }}>Settings</span>
+                        <span style={{ fontSize: '14px', fontWeight: 500 }}>Pengaturan</span>
                     </a>
                 </nav>
 
@@ -299,16 +301,16 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 12px' }}>
                         <UserButton afterSignOutUrl="/" />
                         <div>
-                            <p style={{ fontSize: '14px', fontWeight: 500, margin: 0 }}>{profile.full_name || 'Interviewer'}</p>
-                            <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0 0' }}>Senior Recruiter</p>
+                            <p style={{ fontSize: '14px', fontWeight: 500, margin: 0 }}>{profile.full_name || 'Pewawancara'}</p>
+                            <p style={{ fontSize: '12px', color: '#64748b', margin: '2px 0 0' }}>Tim Pewawancara BPS</p>
                         </div>
                     </div>
                 </div>
             </aside>
 
-            {/* Layout Container */}
+            {/* Layout Container for Queue and Main Content */}
             <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-                {/* Queue Panel (Middle) */}
+                {/* Queue Sidebar (Middle Column) */}
                 <div style={{
                     width: '320px',
                     flexShrink: 0,
@@ -317,10 +319,9 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                     display: 'flex',
                     flexDirection: 'column'
                 }}>
-                    {/* Queue Header */}
                     <div style={{ padding: '20px 20px 8px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Today's Queue</h2>
+                            <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Antrean Hari Ini</h2>
                             <span style={{
                                 background: 'rgba(54, 54, 226, 0.1)',
                                 color: '#3636e2',
@@ -333,7 +334,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                             </span>
                         </div>
                         <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                            {activeApp ? 'Now interviewing' : queue.length > 0 ? 'Next up for interview' : 'No candidates waiting'}
+                            {activeApp ? 'Sedang diwawancara' : queue.length > 0 ? 'Peserta berikutnya' : 'Belum ada peserta'}
                         </p>
                     </div>
 
@@ -361,13 +362,13 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                         fontWeight: 700,
                                         fontSize: '14px'
                                     }}>
-                                        {activeApp.candidate?.full_name?.charAt(0) || 'C'}
+                                        {activeApp.candidate?.full_name?.charAt(0) || 'P'}
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <p style={{ fontSize: '14px', fontWeight: 700, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {activeApp.candidate?.full_name || 'Kandidat'}
+                                            {activeApp.candidate?.full_name || 'Peserta'}
                                         </p>
-                                        <p style={{ fontSize: '12px', color: '#3636e2', fontWeight: 500, marginTop: '2px' }}>Interviewing Now</p>
+                                        <p style={{ fontSize: '12px', color: '#3636e2', fontWeight: 500, marginTop: '2px' }}>Sedang Diwawancara</p>
                                     </div>
                                     <div style={{
                                         width: '10px',
@@ -400,14 +401,14 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                         fontWeight: 500,
                                         fontSize: '14px'
                                     }}>
-                                        {app.candidate?.full_name?.charAt(0) || 'C'}
+                                        {app.candidate?.full_name?.charAt(0) || 'P'}
                                     </div>
                                     <div style={{ flex: 1, minWidth: 0 }}>
                                         <p style={{ fontSize: '14px', fontWeight: 500, margin: 0, color: '#475569' }}>
-                                            {app.candidate?.full_name || 'Kandidat'}
+                                            {app.candidate?.full_name || 'Peserta'}
                                         </p>
                                         <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
-                                            Waiting {getWaitingTime(app.checked_in_at)}
+                                            Menunggu {getWaitingTime(app.checked_in_at)}
                                         </p>
                                     </div>
                                     <div style={{
@@ -427,7 +428,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
 
                         {queue.length === 0 && !activeApp && (
                             <p style={{ textAlign: 'center', padding: '32px 0', color: '#94a3b8', fontSize: '12px' }}>
-                                No candidates in queue
+                                Belum ada peserta dalam antrean
                             </p>
                         )}
                     </div>
@@ -450,7 +451,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                             gap: '8px'
                         }}>
                             <Plus size={16} />
-                            Add Walk-in
+                            Tambah Peserta Langsung
                         </button>
                     </div>
                 </div>
@@ -490,28 +491,28 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                         fontSize: '20px',
                                         fontWeight: 700
                                     }}>
-                                        {activeApp.candidate?.full_name?.charAt(0) || 'C'}
+                                        {activeApp.candidate?.full_name?.charAt(0) || 'P'}
                                     </div>
                                     <div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                             <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0 }}>
-                                                Interviewing: {activeApp.candidate?.full_name || 'Kandidat'}
+                                                Mewawancarai: {activeApp.candidate?.full_name || 'Peserta'}
                                             </h2>
                                             <span style={{
                                                 padding: '2px 10px',
                                                 borderRadius: '20px',
-                                                background: '#dbeafe',
-                                                color: '#1d4ed8',
+                                                background: '#dcfce7',
+                                                color: '#166534',
                                                 fontSize: '12px',
                                                 fontWeight: 600,
                                                 textTransform: 'uppercase',
                                                 letterSpacing: '0.05em'
                                             }}>
-                                                Live
+                                                Aktif
                                             </span>
                                         </div>
                                         <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px' }}>
-                                            {activeApp.job?.title || 'Position'} Candidate
+                                            Posisi: {activeApp.job?.title || 'Petugas Mitra BPS'} • Antrean: {activeApp.queue_number || '-'}
                                         </p>
                                     </div>
                                 </div>
@@ -530,7 +531,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                         cursor: 'pointer'
                                     }}>
                                         <FileText size={18} />
-                                        View Resume
+                                        Lihat Dokumen
                                     </button>
                                     <button style={{
                                         display: 'flex',
@@ -546,7 +547,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                         cursor: 'pointer'
                                     }}>
                                         <Clock size={18} />
-                                        History
+                                        Riwayat
                                     </button>
                                 </div>
                             </header>
@@ -611,13 +612,13 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                                         {getRemainingTime()}
                                                     </span>
                                                     <span style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                                                        Remaining
+                                                        Tersisa
                                                     </span>
                                                 </div>
                                             </div>
                                             <div>
-                                                <h3 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Technical Deep Dive</h3>
-                                                <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px' }}>Current Phase • Planned duration: 45 min</p>
+                                                <h3 style={{ fontSize: '18px', fontWeight: 600, margin: 0 }}>Sesi Wawancara</h3>
+                                                <p style={{ fontSize: '14px', color: '#64748b', marginTop: '4px' }}>Durasi standar: 30 menit</p>
                                             </div>
                                         </div>
                                         <div style={{ display: 'flex', gap: '12px' }}>
@@ -652,7 +653,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                                     color: '#475569'
                                                 }}
                                             >
-                                                + 5m
+                                                + 5 menit
                                             </button>
                                         </div>
                                     </div>
@@ -670,7 +671,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500 }}>
                                                     <Code size={18} color="#3b82f6" />
-                                                    Technical Skill
+                                                    Kemampuan Teknis
                                                 </div>
                                                 <span style={{ fontSize: '14px', fontWeight: 700, color: scores.technical > 0 ? '#3636e2' : '#94a3b8' }}>
                                                     {scores.technical}/5
@@ -690,7 +691,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                                     outline: 'none',
                                                     color: '#475569'
                                                 }}
-                                                placeholder="Note on technical ability..."
+                                                placeholder="Catatan kemampuan teknis..."
                                                 rows={2}
                                                 value={technicalNote}
                                                 onChange={(e) => setTechnicalNote(e.target.value)}
@@ -708,7 +709,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500 }}>
                                                     <Mic size={18} color="#a855f7" />
-                                                    Communication
+                                                    Komunikasi
                                                 </div>
                                                 <span style={{ fontSize: '14px', fontWeight: 700, color: scores.communication > 0 ? '#3636e2' : '#94a3b8' }}>
                                                     {scores.communication}/5
@@ -728,7 +729,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                                     outline: 'none',
                                                     color: '#475569'
                                                 }}
-                                                placeholder="Note on communication..."
+                                                placeholder="Catatan cara berkomunikasi..."
                                                 rows={2}
                                                 value={communicationNote}
                                                 onChange={(e) => setCommunicationNote(e.target.value)}
@@ -746,7 +747,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500 }}>
                                                     <Smile size={18} color="#22c55e" />
-                                                    Attitude
+                                                    Sikap & Perilaku
                                                 </div>
                                                 <span style={{ fontSize: '14px', fontWeight: 700, color: scores.attitude > 0 ? '#3636e2' : '#94a3b8' }}>
                                                     {scores.attitude}/5
@@ -766,7 +767,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                                     outline: 'none',
                                                     color: '#475569'
                                                 }}
-                                                placeholder="Note on attitude..."
+                                                placeholder="Catatan sikap dan perilaku..."
                                                 rows={2}
                                                 value={attitudeNote}
                                                 onChange={(e) => setAttitudeNote(e.target.value)}
@@ -792,9 +793,9 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                         }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 700, color: '#475569' }}>
                                                 <Edit3 size={16} color="#94a3b8" />
-                                                Internal Notes
+                                                Catatan Internal Pewawancara
                                             </div>
-                                            <span style={{ fontSize: '12px', color: '#94a3b8' }}>Auto-saved 2m ago</span>
+                                            <span style={{ fontSize: '12px', color: '#94a3b8' }}>Otomatis tersimpan</span>
                                         </div>
                                         <div style={{ padding: '16px' }}>
                                             <textarea
@@ -808,7 +809,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                                     lineHeight: 1.6,
                                                     color: '#475569'
                                                 }}
-                                                placeholder="Type your detailed assessment notes here. These will be shared with the hiring committee. Focus on key strengths, weaknesses, and specific project examples discussed during the interview..."
+                                                placeholder="Tuliskan catatan penilaian lengkap di sini. Catatan ini akan tersimpan dalam rekap hasil wawancara. Fokus pada kelebihan, kekurangan, dan potensi peserta..."
                                                 value={internalNotes}
                                                 onChange={(e) => setInternalNotes(e.target.value)}
                                             />
@@ -854,7 +855,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                             onChange={(e) => setFlagForReview(e.target.checked)}
                                             style={{ width: '16px', height: '16px', accentColor: '#3636e2' }}
                                         />
-                                        Flag for review
+                                        Tandai untuk ditinjau ulang
                                     </label>
                                     <div style={{ display: 'flex', gap: '12px' }}>
                                         <button
@@ -863,16 +864,16 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                             style={{
                                                 padding: '10px 24px',
                                                 borderRadius: '12px',
-                                                border: '1px solid #cbd5e1',
+                                                border: '1px solid #ef4444',
                                                 background: '#ffffff',
-                                                color: '#475569',
+                                                color: '#ef4444',
                                                 fontSize: '14px',
                                                 fontWeight: 500,
                                                 cursor: processing ? 'not-allowed' : 'pointer',
                                                 opacity: processing ? 0.5 : 1
                                             }}
                                         >
-                                            Pass Candidate
+                                            Tidak Lulus
                                         </button>
                                         <button
                                             onClick={handleCompleteSession}
@@ -881,7 +882,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                                 padding: '10px 24px',
                                                 borderRadius: '12px',
                                                 border: 'none',
-                                                background: '#3636e2',
+                                                background: '#22c55e',
                                                 color: '#ffffff',
                                                 fontSize: '14px',
                                                 fontWeight: 500,
@@ -890,7 +891,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 gap: '8px',
-                                                boxShadow: '0 4px 14px rgba(54, 54, 226, 0.3)'
+                                                boxShadow: '0 4px 14px rgba(34, 197, 94, 0.3)'
                                             }}
                                         >
                                             {processing ? (
@@ -905,7 +906,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                             ) : (
                                                 <>
                                                     <CheckCircle2 size={18} />
-                                                    Save & End Session
+                                                    Lulus & Selesai
                                                 </>
                                             )}
                                         </button>
@@ -935,11 +936,11 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                 }}>
                                     <Play size={48} color="#3636e2" fill="#3636e2" />
                                 </div>
-                                <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 8px' }}>Ready for Next Interview?</h2>
+                                <h2 style={{ fontSize: '24px', fontWeight: 700, margin: '0 0 8px' }}>Siap Memulai Wawancara?</h2>
                                 <p style={{ fontSize: '14px', color: '#64748b', marginBottom: '32px' }}>
                                     {queue.length > 0
-                                        ? `There are ${queue.length} candidate(s) waiting in the queue.`
-                                        : 'No candidates in the queue yet. They will appear here once they check in.'
+                                        ? `Terdapat ${queue.length} peserta dalam antrean.`
+                                        : 'Belum ada peserta dalam antrean. Peserta akan muncul setelah check-in.'
                                     }
                                 </p>
                                 <button
@@ -973,7 +974,7 @@ export default function InterviewerDashboard({ profile, notify }: InterviewerDas
                                     ) : (
                                         <>
                                             <UserPlus size={20} />
-                                            Call Next Candidate
+                                            Panggil Peserta Berikutnya
                                         </>
                                     )}
                                 </button>

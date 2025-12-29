@@ -107,10 +107,12 @@ function MainApp() {
         </div>
       )}
 
-      {/* Dev Role Switcher */}
-      <div className="fixed top-4 right-4 z-[300]">
-        <RoleSwitcher currentRole={profile.role} onRoleChanged={() => window.location.reload()} />
-      </div>
+      {/* Dev Role Switcher - Hanya untuk development, nonaktifkan di production */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed top-4 right-4 z-[300]">
+          <RoleSwitcher currentRole={profile.role} onRoleChanged={() => window.location.reload()} />
+        </div>
+      )}
 
       {profile.role === 'candidate' && (
         <CandidateDashboard
