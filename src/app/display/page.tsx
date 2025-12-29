@@ -19,6 +19,8 @@ export default function DisplayPage() {
     const [calledRoom, setCalledRoom] = useState<string | null>(null);
     const [showAnnouncement, setShowAnnouncement] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
+    const [volume, setVolume] = useState(80); // 0-100
+    const [showVolumeSlider, setShowVolumeSlider] = useState(false);
     const [voicesLoaded, setVoicesLoaded] = useState(false);
     const announcementQueue = useRef<{ number: string, name: string, room: string }[]>([]);
     const isAnnouncing = useRef(false);
@@ -79,7 +81,7 @@ export default function DisplayPage() {
         utterance.lang = 'id-ID';
         utterance.rate = 0.9;  // Sedikit lebih lambat untuk kejelasan
         utterance.pitch = 1;
-        utterance.volume = 1;
+        utterance.volume = volume / 100; // Use volume state
 
         utterance.onend = () => {
             onEnd?.();
@@ -90,7 +92,7 @@ export default function DisplayPage() {
         };
 
         window.speechSynthesis.speak(utterance);
-    }, [isMuted]);
+    }, [isMuted, volume]);
 
     // Announce a person with voice
     const announceCall = useCallback((number: string, name: string, room: string) => {
@@ -103,19 +105,19 @@ export default function DisplayPage() {
         // Format nomor untuk dibacakan
         const formattedNumber = number.replace('-', ' ').split('').join(' ');
 
-        // Announcement text sequence
+        // Announcement text sequence (room diganti ruang wawancara)
         const announcement = `
             Perhatian. Perhatian.
             Nomor antrean ${formattedNumber}.
             Atas nama ${name}.
-            Silahkan menuju ${room} untuk wawancara.
-            Sekali lagi, nomor ${formattedNumber}, ${name}, menuju ${room}.
+            Silahkan menuju ruang wawancara sekarang.
+            Sekali lagi, nomor ${formattedNumber}, atas nama ${name}, silahkan menuju ruang wawancara.
         `;
 
         // Play bell sound first, then speak
         const bellAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleAAAAADMzMzxAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
-        bellAudio.volume = 0.5;
-        bellAudio.play().catch(() => { });
+        bellAudio.volume = (volume / 100) * 0.7; // Bell slightly quieter than voice
+        if (!isMuted) bellAudio.play().catch(() => { });
 
         setTimeout(() => {
             speak(announcement, () => {
@@ -142,7 +144,7 @@ export default function DisplayPage() {
         const waiting = pesertaList.filter(p => p.status === 'Menunggu');
         if (waiting.length > 0 && !isAnnouncing.current) {
             const next = waiting[0];
-            announceCall(next.nomorAntrean, next.nama, 'Ruang 1');
+            announceCall(next.nomorAntrean, next.nama, 'ruang wawancara');
         }
     };
 
@@ -158,7 +160,7 @@ export default function DisplayPage() {
             const waiting = pesertaList.filter(p => p.status === 'Menunggu');
             if (waiting.length > 0 && !isAnnouncing.current) {
                 const next = waiting[0];
-                announceCall(next.nomorAntrean, next.nama, 'Ruang 1');
+                announceCall(next.nomorAntrean, next.nama, 'ruang wawancara');
             }
         }, 45000);
 
@@ -186,29 +188,81 @@ export default function DisplayPage() {
             overflow: 'hidden',
             position: 'relative'
         }}>
-            {/* Sound Control Button */}
-            <button
-                onClick={() => setIsMuted(!isMuted)}
+            {/* Sound Control Panel */}
+            <div
                 style={{
                     position: 'fixed',
                     top: 20,
                     right: 20,
                     zIndex: 200,
-                    width: 50,
-                    height: 50,
-                    borderRadius: '50%',
-                    border: 'none',
-                    background: isMuted ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)',
-                    color: isMuted ? '#ef4444' : '#22c55e',
-                    cursor: 'pointer',
                     display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
+                    flexDirection: 'column',
+                    alignItems: 'flex-end',
+                    gap: 8
                 }}
-                title={isMuted ? 'Aktifkan Suara' : 'Matikan Suara'}
+                onMouseEnter={() => setShowVolumeSlider(true)}
+                onMouseLeave={() => setShowVolumeSlider(false)}
             >
-                {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
-            </button>
+                {/* Mute Button */}
+                <button
+                    onClick={() => setIsMuted(!isMuted)}
+                    style={{
+                        width: 50,
+                        height: 50,
+                        borderRadius: '50%',
+                        border: 'none',
+                        background: isMuted ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)',
+                        color: isMuted ? '#ef4444' : '#22c55e',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                    title={isMuted ? 'Aktifkan Suara' : 'Matikan Suara'}
+                >
+                    {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+                </button>
+
+                {/* Volume Slider Panel */}
+                {showVolumeSlider && (
+                    <div style={{
+                        background: 'rgba(15, 23, 42, 0.95)',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        borderRadius: 16,
+                        padding: '16px 20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 12,
+                        minWidth: 200,
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.5)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: 14, fontWeight: 600, color: '#94a3b8' }}>Volume</span>
+                            <span style={{ fontSize: 16, fontWeight: 700, color: '#22c55e' }}>{volume}%</span>
+                        </div>
+                        <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={volume}
+                            onChange={(e) => setVolume(parseInt(e.target.value))}
+                            style={{
+                                width: '100%',
+                                height: 8,
+                                borderRadius: 4,
+                                appearance: 'none',
+                                background: `linear-gradient(to right, #22c55e 0%, #22c55e ${volume}%, #374151 ${volume}%, #374151 100%)`,
+                                cursor: 'pointer',
+                                outline: 'none'
+                            }}
+                        />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#64748b' }}>
+                            <span>🔇 Pelan</span>
+                            <span>Keras 🔊</span>
+                        </div>
+                    </div>
+                )}
+            </div>
 
             {/* Manual Call Button (for demo) */}
             <button
@@ -218,7 +272,7 @@ export default function DisplayPage() {
                     position: 'fixed',
                     top: 80,
                     right: 20,
-                    zIndex: 200,
+                    zIndex: 199,
                     width: 50,
                     height: 50,
                     borderRadius: '50%',
@@ -300,7 +354,7 @@ export default function DisplayPage() {
                             marginBottom: 32
                         }}>
                             <Video size={32} color="#a78bfa" />
-                            <span style={{ fontSize: 36, fontWeight: 700, color: '#a78bfa' }}>{calledRoom}</span>
+                            <span style={{ fontSize: 36, fontWeight: 700, color: '#a78bfa' }}>Ruang Wawancara</span>
                         </div>
 
                         <p style={{ fontSize: 28, color: '#94a3b8', marginTop: 16 }}>
