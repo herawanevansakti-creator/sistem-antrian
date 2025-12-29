@@ -47,11 +47,34 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
     const [locationLoading, setLocationLoading] = useState(false);
     const [checkingIn, setCheckingIn] = useState(false);
 
-    // Simulasi data peserta (nanti dari Supabase)
+    // Simulasi data peserta (sesuai dengan sample-data-peserta.sql)
+    // Nanti akan diganti dengan query ke Supabase
     const mockPesertaDB: PesertaData[] = [
-        { id: 1, nik: '3301017670101001', sobatId: '331023110301', nama: 'Pingki Setriana', status: 'Terdaftar', posisiDilamar: 'Petugas Pencacah' },
-        { id: 2, nik: '3310105510920001', sobatId: '331022020080', nama: 'Heni Purnama Sari', nomorAntrean: 'A-001', status: 'Menunggu', posisiDilamar: 'Pengawas' },
-        { id: 3, nik: '3310011412950001', sobatId: '331022020069', nama: 'Daiyan Agung Santosa', nomorAntrean: 'A-002', status: 'Lulus', posisiDilamar: 'Petugas Pencacah' },
+        // Peserta yang sudah check-in (Menunggu)
+        { id: 1, nik: '3301017670101001', sobatId: '331023110301', nama: 'Pingki Setriana', nomorAntrean: 'A-001', status: 'Menunggu', posisiDilamar: 'Petugas Pencacah' },
+        { id: 2, nik: '3310105510920001', sobatId: '331022020080', nama: 'Heni Purnama Sari', nomorAntrean: 'A-002', status: 'Menunggu', posisiDilamar: 'Pengawas' },
+        { id: 3, nik: '3310011412950001', sobatId: '331022020069', nama: 'Daiyan Agung Santosa', nomorAntrean: 'A-003', status: 'Menunggu', posisiDilamar: 'Petugas Pencacah' },
+        { id: 4, nik: '3310081604970001', sobatId: '331022020071', nama: 'Matyas Wahyu Bagaskoro', nomorAntrean: 'A-004', status: 'Menunggu', posisiDilamar: 'Pengawas' },
+        { id: 5, nik: '3310112509930001', sobatId: '331022020130', nama: 'Muhammad Yasser Arafat', nomorAntrean: 'A-005', status: 'Menunggu', posisiDilamar: 'Petugas Pencacah' },
+        // Peserta yang belum check-in (Terdaftar)
+        { id: 6, nik: '3302055308950001', sobatId: '331022020059', nama: 'Siti Rosyidah', status: 'Terdaftar', posisiDilamar: 'Petugas Pencacah' },
+        { id: 7, nik: '3310094905760001', sobatId: '331022040033', nama: 'Winarti', status: 'Terdaftar', posisiDilamar: 'Petugas Pencacah' },
+        { id: 8, nik: '3310090807870001', sobatId: '331022020079', nama: 'Jarot Tri Yuliawan', status: 'Terdaftar', posisiDilamar: 'Pengawas' },
+        { id: 9, nik: '3310206512770002', sobatId: '331022020038', nama: 'Sri Rahayu', status: 'Terdaftar', posisiDilamar: 'Koordinator Statistik Kecamatan' },
+        { id: 10, nik: '3310110807820001', sobatId: '331022020247', nama: 'Yuliadi', status: 'Terdaftar', posisiDilamar: 'Koordinator Statistik Kecamatan' },
+        // Peserta yang sudah lulus
+        { id: 11, nik: '3302011506880001', sobatId: '331022020101', nama: 'Bambang Supriadi', status: 'Lulus', posisiDilamar: 'Pengawas' },
+        { id: 12, nik: '3310152808910001', sobatId: '331022020156', nama: 'Dewi Lestari', status: 'Lulus', posisiDilamar: 'Petugas Pencacah' },
+        { id: 13, nik: '3310180205850001', sobatId: '331022020189', nama: 'Eko Prasetyo', status: 'Lulus', posisiDilamar: 'Petugas Pencacah' },
+        { id: 14, nik: '3302201512890001', sobatId: '331022020212', nama: 'Fitri Handayani', status: 'Lulus', posisiDilamar: 'Pengawas' },
+        { id: 15, nik: '3310221008870001', sobatId: '331022020234', nama: 'Gunawan Wibisono', status: 'Lulus', posisiDilamar: 'Petugas Pencacah' },
+        // Peserta tidak lulus
+        { id: 16, nik: '3310250312920001', sobatId: '331022020267', nama: 'Hendri Kurniawan', status: 'Tidak Lulus', posisiDilamar: 'Petugas Pencacah' },
+        { id: 17, nik: '3302281709900001', sobatId: '331022020289', nama: 'Indah Permata Sari', status: 'Tidak Lulus', posisiDilamar: 'Petugas Pencacah' },
+        { id: 18, nik: '3310301405880001', sobatId: '331022020312', nama: 'Joko Widodo', status: 'Tidak Lulus', posisiDilamar: 'Petugas Pencacah' },
+        // Peserta ditinjau
+        { id: 19, nik: '3310332011850001', sobatId: '331022020345', nama: 'Kartika Dewi', status: 'Ditinjau', posisiDilamar: 'Petugas Pencacah' },
+        { id: 20, nik: '3302351803870001', sobatId: '331022020378', nama: 'Lukman Hakim', status: 'Ditinjau', posisiDilamar: 'Pengawas' },
     ];
 
     const handleNikLogin = async () => {
