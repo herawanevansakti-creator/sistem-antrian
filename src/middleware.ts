@@ -3,6 +3,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 const isPublicRoute = createRouteMatcher([
     '/',
     '/peserta(.*)',  // Peserta login dengan NIK, tanpa Clerk
+    '/display(.*)',  // Public display untuk layar TV ruang tunggu
     '/sign-in(.*)',
     '/sign-up(.*)',
     '/api/webhooks(.*)',
