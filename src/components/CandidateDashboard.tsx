@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { UserButton } from '@clerk/nextjs';
 import {
     HelpCircle,
     CheckCircle,
@@ -10,31 +9,74 @@ import {
     Timer,
     MapPin,
     FileText,
-    FolderOpen,
-    Download,
-    ExternalLink,
     Loader2,
     QrCode,
     Phone,
-    Mail
+    Mail,
+    User,
+    ArrowRight,
+    AlertCircle,
+    Shield
 } from 'lucide-react';
-import Link from 'next/link';
-import { useCandidateApplication, useJobs, checkInWithLocation } from '@/lib/hooks';
 import type { Profile } from '@/types';
 
 interface CandidateDashboardProps {
-    profile: Profile;
+    profile?: Profile;
     notify: (msg: string) => void;
 }
 
+interface PesertaData {
+    id: number;
+    nik: string;
+    sobatId: string;
+    nama: string;
+    nomorAntrean?: string;
+    status: string;
+    posisiDilamar: string;
+}
+
 export default function CandidateDashboard({ profile, notify }: CandidateDashboardProps) {
-    const { application, loading } = useCandidateApplication(profile.id);
-    const { jobs } = useJobs();
+    // State untuk login NIK (peserta tanpa akun Clerk)
+    const [nikLogin, setNikLogin] = useState('');
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
+    const [loginError, setLoginError] = useState('');
+    const [pesertaData, setPesertaData] = useState<PesertaData | null>(null);
+
+    // State untuk check-in
     const [locationVerified, setLocationVerified] = useState(false);
     const [locationLoading, setLocationLoading] = useState(false);
     const [checkingIn, setCheckingIn] = useState(false);
-    const [showJobSelection, setShowJobSelection] = useState(false);
-    const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+    // Simulasi data peserta (nanti dari Supabase)
+    const mockPesertaDB: PesertaData[] = [
+        { id: 1, nik: '3301017670101001', sobatId: '331023110301', nama: 'Pingki Setriana', status: 'Terdaftar', posisiDilamar: 'Petugas Pencacah' },
+        { id: 2, nik: '3310105510920001', sobatId: '331022020080', nama: 'Heni Purnama Sari', nomorAntrean: 'A-001', status: 'Menunggu', posisiDilamar: 'Pengawas' },
+        { id: 3, nik: '3310011412950001', sobatId: '331022020069', nama: 'Daiyan Agung Santosa', nomorAntrean: 'A-002', status: 'Lulus', posisiDilamar: 'Petugas Pencacah' },
+    ];
+
+    const handleNikLogin = async () => {
+        if (nikLogin.length !== 16) {
+            setLoginError('NIK harus 16 digit');
+            return;
+        }
+
+        setIsLoggingIn(true);
+        setLoginError('');
+
+        // Simulasi cek NIK di database (nanti pakai Supabase)
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const found = mockPesertaDB.find(p => p.nik === nikLogin);
+
+        if (found) {
+            setPesertaData(found);
+            notify(`Selamat datang, ${found.nama}!`);
+        } else {
+            setLoginError('NIK tidak ditemukan. Pastikan NIK terdaftar sebagai peserta.');
+        }
+
+        setIsLoggingIn(false);
+    };
 
     const verifyLocation = () => {
         setLocationLoading(true);
@@ -46,7 +88,6 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
 
         navigator.geolocation.getCurrentPosition(
             (pos) => {
-                setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
                 setLocationVerified(true);
                 setLocationLoading(false);
                 notify("Lokasi berhasil diverifikasi!");
@@ -58,46 +99,266 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
         );
     };
 
-    const handleCheckIn = async (jobId: number) => {
-        if (!userLocation) {
-            verifyLocation();
-            return;
-        }
+    const handleCheckIn = async () => {
+        if (!pesertaData) return;
 
         setCheckingIn(true);
-        const result = await checkInWithLocation(
-            profile.id,
-            jobId,
-            userLocation.lat,
-            userLocation.lng
-        );
 
-        if (result.status === 'success') {
-            notify(`Berhasil check-in! Nomor antrean Anda: ${result.queue_number}`);
-            setShowJobSelection(false);
-        } else {
-            notify(result.message || 'Gagal melakukan check-in');
-        }
+        // Simulasi check-in (nanti pakai Supabase function)
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        const newAntrean = 'A-' + String(Math.floor(Math.random() * 100) + 1).padStart(3, '0');
+        setPesertaData({
+            ...pesertaData,
+            nomorAntrean: newAntrean,
+            status: 'Menunggu'
+        });
+
+        notify(`Check-in berhasil! Nomor antrean Anda: ${newAntrean}`);
         setCheckingIn(false);
     };
 
-    if (loading) {
+    const handleLogout = () => {
+        setPesertaData(null);
+        setNikLogin('');
+        setLocationVerified(false);
+    };
+
+    const today = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Jika peserta belum login dengan NIK, tampilkan form login NIK
+    if (!pesertaData) {
         return (
-            <div style={{ minHeight: '100vh', backgroundColor: '#f6f6f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Loader2 style={{ width: 32, height: 32, color: '#3636e2', animation: 'spin 1s linear infinite' }} />
-                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <div style={{
+                backgroundColor: '#f6f6f8',
+                minHeight: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                fontFamily: "'Inter', sans-serif"
+            }}>
+                {/* Header */}
+                <header style={{
+                    backgroundColor: '#ffffff',
+                    borderBottom: '1px solid #e8e8f3',
+                    padding: '16px 24px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                }}>
+                    <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div style={{
+                                width: 48,
+                                height: 48,
+                                background: 'linear-gradient(135deg, #3636e2, #60a5fa)',
+                                borderRadius: 12,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontSize: 18,
+                                fontWeight: 700
+                            }}>
+                                BPS
+                            </div>
+                            <div>
+                                <h2 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: 0 }}>Sistem Antrean Wawancara</h2>
+                                <p style={{ fontSize: 11, color: '#6b7280', margin: 0 }}>Seleksi Mitra BPS 2026</p>
+                            </div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                            <a href="#" style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                color: '#6b7280',
+                                textDecoration: 'none',
+                                fontSize: 14
+                            }}>
+                                <HelpCircle style={{ width: 18, height: 18 }} />
+                                Bantuan
+                            </a>
+                        </div>
+                    </div>
+                </header>
+
+                {/* Main Content - NIK Login */}
+                <main style={{
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '32px'
+                }}>
+                    <div style={{
+                        backgroundColor: '#ffffff',
+                        borderRadius: 24,
+                        padding: '48px',
+                        width: '100%',
+                        maxWidth: 480,
+                        boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+                        textAlign: 'center'
+                    }}>
+                        {/* Icon */}
+                        <div style={{
+                            width: 80,
+                            height: 80,
+                            background: 'linear-gradient(135deg, #3636e2, #60a5fa)',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto 24px',
+                            boxShadow: '0 8px 24px rgba(54, 54, 226, 0.3)'
+                        }}>
+                            <User style={{ width: 40, height: 40, color: 'white' }} />
+                        </div>
+
+                        <h1 style={{ fontSize: 28, fontWeight: 800, color: '#111827', margin: '0 0 8px' }}>
+                            Portal Peserta
+                        </h1>
+                        <p style={{ fontSize: 15, color: '#6b7280', margin: '0 0 32px', lineHeight: 1.6 }}>
+                            Masukkan NIK Anda untuk mengakses sistem antrean wawancara
+                        </p>
+
+                        {/* NIK Input */}
+                        <div style={{ textAlign: 'left', marginBottom: 24 }}>
+                            <label style={{
+                                display: 'block',
+                                fontSize: 13,
+                                fontWeight: 600,
+                                color: '#374151',
+                                marginBottom: 8
+                            }}>
+                                Nomor Induk Kependudukan (NIK)
+                            </label>
+                            <input
+                                type="text"
+                                value={nikLogin}
+                                onChange={(e) => {
+                                    const value = e.target.value.replace(/\D/g, '').slice(0, 16);
+                                    setNikLogin(value);
+                                    setLoginError('');
+                                }}
+                                placeholder="Masukkan 16 digit NIK"
+                                style={{
+                                    width: '100%',
+                                    padding: '14px 16px',
+                                    fontSize: 16,
+                                    border: loginError ? '2px solid #ef4444' : '1px solid #e5e7eb',
+                                    borderRadius: 12,
+                                    outline: 'none',
+                                    fontFamily: 'monospace',
+                                    letterSpacing: '1px',
+                                    boxSizing: 'border-box',
+                                    transition: 'border-color 0.2s'
+                                }}
+                                onFocus={(e) => {
+                                    if (!loginError) e.currentTarget.style.borderColor = '#3636e2';
+                                }}
+                                onBlur={(e) => {
+                                    if (!loginError) e.currentTarget.style.borderColor = '#e5e7eb';
+                                }}
+                            />
+                            <p style={{
+                                fontSize: 12,
+                                color: loginError ? '#ef4444' : '#9ca3af',
+                                margin: '8px 0 0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 4
+                            }}>
+                                {loginError ? (
+                                    <>
+                                        <AlertCircle size={14} />
+                                        {loginError}
+                                    </>
+                                ) : (
+                                    `${nikLogin.length}/16 digit`
+                                )}
+                            </p>
+                        </div>
+
+                        {/* Login Button */}
+                        <button
+                            onClick={handleNikLogin}
+                            disabled={nikLogin.length !== 16 || isLoggingIn}
+                            style={{
+                                width: '100%',
+                                padding: '14px 24px',
+                                background: nikLogin.length === 16 ? 'linear-gradient(135deg, #3636e2, #5858f5)' : '#e5e7eb',
+                                color: nikLogin.length === 16 ? '#ffffff' : '#9ca3af',
+                                border: 'none',
+                                borderRadius: 12,
+                                fontSize: 15,
+                                fontWeight: 600,
+                                cursor: nikLogin.length === 16 && !isLoggingIn ? 'pointer' : 'not-allowed',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: 8,
+                                transition: 'all 0.2s',
+                                boxShadow: nikLogin.length === 16 ? '0 4px 14px rgba(54, 54, 226, 0.3)' : 'none'
+                            }}
+                        >
+                            {isLoggingIn ? (
+                                <>
+                                    <Loader2 style={{ width: 20, height: 20, animation: 'spin 1s linear infinite' }} />
+                                    Memverifikasi...
+                                </>
+                            ) : (
+                                <>
+                                    Masuk
+                                    <ArrowRight style={{ width: 18, height: 18 }} />
+                                </>
+                            )}
+                        </button>
+
+                        {/* Security Notice */}
+                        <div style={{
+                            marginTop: 24,
+                            padding: '16px',
+                            background: '#f0fdf4',
+                            borderRadius: 12,
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: 12,
+                            textAlign: 'left'
+                        }}>
+                            <Shield style={{ width: 20, height: 20, color: '#22c55e', flexShrink: 0, marginTop: 2 }} />
+                            <div>
+                                <p style={{ fontSize: 13, fontWeight: 600, color: '#166534', margin: '0 0 4px' }}>
+                                    Keamanan Data
+                                </p>
+                                <p style={{ fontSize: 12, color: '#15803d', margin: 0, lineHeight: 1.5 }}>
+                                    NIK Anda hanya digunakan untuk verifikasi kehadiran.
+                                    Pastikan Anda berada di lokasi wawancara BPS.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+
+                {/* Footer */}
+                <footer style={{
+                    padding: '20px 24px',
+                    borderTop: '1px solid #e8e8f3',
+                    backgroundColor: '#ffffff',
+                    textAlign: 'center'
+                }}>
+                    <p style={{ fontSize: 12, color: '#6b7280', margin: 0 }}>
+                        © 2025 Badan Pusat Statistik. Seleksi Petugas Mitra 2026.
+                    </p>
+                </footer>
+
+                <style>{`
+                    @keyframes spin { to { transform: rotate(360deg); } }
+                `}</style>
             </div>
         );
     }
 
-    const firstName = profile.full_name?.split(' ')[0] || 'Peserta';
-    const today = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-
-    // Determine status
-    const isCheckedIn = !!application;
-    const queueNumber = application?.queue_number || '-';
-    const currentServing = 'A-05'; // Mock - akan dari data realtime
-    const estimatedWait = '~15';
+    // Peserta sudah login - tampilkan dashboard
+    const isCheckedIn = pesertaData.status !== 'Terdaftar';
+    const firstName = pesertaData.nama.split(' ')[0];
 
     return (
         <div style={{ backgroundColor: '#f6f6f8', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', sans-serif" }}>
@@ -116,7 +377,6 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
                         <div style={{
                             width: 48,
                             height: 48,
-                            backgroundColor: 'linear-gradient(135deg, #3636e2, #60a5fa)',
                             background: 'linear-gradient(135deg, #3636e2, #60a5fa)',
                             borderRadius: 12,
                             display: 'flex',
@@ -134,36 +394,56 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
                         </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                        <button style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            height: 40,
-                            padding: '0 20px',
-                            backgroundColor: 'rgba(54, 54, 226, 0.1)',
-                            color: '#3636e2',
-                            borderRadius: 8,
-                            border: 'none',
-                            fontSize: 14,
-                            fontWeight: 600,
-                            cursor: 'pointer'
-                        }}>
+                        <button
+                            onClick={() => notify('Fitur bantuan akan segera tersedia')}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                height: 40,
+                                padding: '0 20px',
+                                backgroundColor: 'rgba(54, 54, 226, 0.1)',
+                                color: '#3636e2',
+                                borderRadius: 8,
+                                border: 'none',
+                                fontSize: 14,
+                                fontWeight: 600,
+                                cursor: 'pointer'
+                            }}
+                        >
                             <HelpCircle style={{ width: 20, height: 20 }} />
                             Bantuan
                         </button>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 24, borderLeft: '1px solid #e5e7eb' }}>
                             <div style={{ textAlign: 'right' }}>
-                                <p style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: 0 }}>{profile.full_name}</p>
+                                <p style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: 0 }}>{pesertaData.nama}</p>
                                 <p style={{ fontSize: 12, color: '#6b7280', margin: 0 }}>Peserta Seleksi</p>
                             </div>
-                            <UserButton afterSignOutUrl="/" />
+                            <button
+                                onClick={handleLogout}
+                                style={{
+                                    width: 40,
+                                    height: 40,
+                                    borderRadius: '50%',
+                                    border: '2px solid #e5e7eb',
+                                    background: '#f1f5f9',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    color: '#64748b'
+                                }}
+                                title="Keluar"
+                            >
+                                <User style={{ width: 20, height: 20 }} />
+                            </button>
                         </div>
                     </div>
                 </div>
             </header>
 
             {/* Main Content */}
-            <main style={{ flex: 1, maxWidth: 1280, margin: '0 auto', padding: '32px 32px', width: '100%' }}>
+            <main style={{ flex: 1, maxWidth: 1280, margin: '0 auto', padding: '32px', width: '100%' }}>
                 {/* Page Heading */}
                 <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
                     <div>
@@ -183,11 +463,11 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
                                 color: '#6b7280'
                             }}>
                                 <Ticket style={{ width: 16, height: 16 }} />
-                                ID: BPS-2026-{profile.id.slice(-6).toUpperCase()}
+                                Sobat-ID: {pesertaData.sobatId}
                             </span>
                             <span style={{ color: '#6b7280' }}>•</span>
                             <span style={{ fontWeight: 600, color: '#3636e2', fontSize: 13 }}>
-                                Posisi: {application?.job?.title || 'Petugas Pencacah'}
+                                Posisi: {pesertaData.posisiDilamar}
                             </span>
                         </div>
                     </div>
@@ -229,7 +509,7 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
                                     <div style={{ flex: 1 }}>
                                         <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0, marginBottom: 4 }}>Anda Telah Check-in</h3>
                                         <p style={{ color: '#4b5563', margin: 0, lineHeight: 1.6, maxWidth: 500 }}>
-                                            Terima kasih telah hadir tepat waktu. Anda sudah terdaftar dalam antrean. Harap menunggu di ruang tunggu dan perhatikan panggilan nomor antrean Anda.
+                                            Harap menunggu di ruang tunggu dan perhatikan panggilan nomor antrean Anda.
                                         </p>
                                     </div>
                                     <div style={{ borderLeft: '1px solid #e5e7eb', paddingLeft: 24 }}>
@@ -239,7 +519,7 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
                                                 <span style={{ position: 'absolute', width: '100%', height: '100%', borderRadius: '50%', backgroundColor: '#3636e2', opacity: 0.75, animation: 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite' }} />
                                                 <span style={{ position: 'relative', display: 'block', width: 10, height: 10, borderRadius: '50%', backgroundColor: '#3636e2' }} />
                                             </span>
-                                            Dalam Antrean
+                                            {pesertaData.status}
                                         </div>
                                     </div>
                                 </div>
@@ -278,9 +558,10 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
                                         <MapPin style={{ width: 18, height: 18 }} />
                                         {locationLoading ? 'Memverifikasi...' : 'Verifikasi Lokasi'}
                                     </button>
-                                ) : !showJobSelection ? (
+                                ) : (
                                     <button
-                                        onClick={() => setShowJobSelection(true)}
+                                        onClick={handleCheckIn}
+                                        disabled={checkingIn}
                                         style={{
                                             backgroundColor: '#22c55e',
                                             color: '#fff',
@@ -290,38 +571,15 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
                                             fontSize: 14,
                                             fontWeight: 600,
                                             cursor: 'pointer',
+                                            opacity: checkingIn ? 0.5 : 1,
                                             display: 'inline-flex',
                                             alignItems: 'center',
                                             gap: 8
                                         }}
                                     >
                                         <CheckCircle style={{ width: 18, height: 18 }} />
-                                        Check-in Sekarang
+                                        {checkingIn ? 'Memproses...' : 'Check-in Sekarang'}
                                     </button>
-                                ) : (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                        <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 8 }}>Pilih posisi yang Anda lamar:</p>
-                                        {jobs.map(job => (
-                                            <button
-                                                key={job.id}
-                                                onClick={() => handleCheckIn(job.id)}
-                                                disabled={checkingIn}
-                                                style={{
-                                                    backgroundColor: '#f3f4f6',
-                                                    color: '#111827',
-                                                    padding: '12px 24px',
-                                                    borderRadius: 8,
-                                                    border: '1px solid #e5e7eb',
-                                                    fontSize: 14,
-                                                    fontWeight: 500,
-                                                    cursor: 'pointer',
-                                                    opacity: checkingIn ? 0.5 : 1
-                                                }}
-                                            >
-                                                {checkingIn ? 'Memproses...' : job.title}
-                                            </button>
-                                        ))}
-                                    </div>
                                 )}
                             </div>
                         )}
@@ -334,17 +592,14 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
                                         <span style={{ fontSize: 14, fontWeight: 500 }}>Nomor Antrean Anda</span>
                                         <Ticket style={{ width: 24, height: 24, color: '#3636e2' }} />
                                     </div>
-                                    <p style={{ fontSize: 48, fontWeight: 900, color: '#3636e2', margin: 0, fontFamily: 'monospace' }}>{queueNumber}</p>
+                                    <p style={{ fontSize: 48, fontWeight: 900, color: '#3636e2', margin: 0, fontFamily: 'monospace' }}>{pesertaData.nomorAntrean || '-'}</p>
                                 </div>
                                 <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, color: '#6b7280' }}>
                                         <span style={{ fontSize: 14, fontWeight: 500 }}>Sedang Dipanggil</span>
                                         <Bell style={{ width: 24, height: 24, color: '#22c55e' }} />
                                     </div>
-                                    <p style={{ fontSize: 48, fontWeight: 900, color: '#111827', margin: 0, fontFamily: 'monospace' }}>{currentServing}</p>
-                                    <div style={{ height: 6, backgroundColor: '#f3f4f6', borderRadius: 3, marginTop: 12 }}>
-                                        <div style={{ height: '100%', backgroundColor: '#22c55e', borderRadius: 3, width: '60%' }} />
-                                    </div>
+                                    <p style={{ fontSize: 48, fontWeight: 900, color: '#111827', margin: 0, fontFamily: 'monospace' }}>A-001</p>
                                 </div>
                                 <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, color: '#6b7280' }}>
@@ -352,58 +607,13 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
                                         <Timer style={{ width: 24, height: 24, color: '#f97316' }} />
                                     </div>
                                     <p style={{ fontSize: 48, fontWeight: 900, color: '#111827', margin: 0 }}>
-                                        {estimatedWait} <span style={{ fontSize: 20, fontWeight: 700, color: '#6b7280' }}>menit</span>
+                                        ~15 <span style={{ fontSize: 20, fontWeight: 700, color: '#6b7280' }}>menit</span>
                                     </p>
                                 </div>
                             </div>
                         )}
 
-                        {/* Progress Stepper */}
-                        {isCheckedIn && (
-                            <div style={{ backgroundColor: '#fff', borderRadius: 16, padding: 24, border: '1px solid #e5e7eb' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                                    <h3 style={{ fontWeight: 700, color: '#111827', margin: 0 }}>Tahapan Hari Ini</h3>
-                                    <span style={{ fontSize: 14, color: '#3636e2', fontWeight: 500, cursor: 'pointer' }}>Lihat Detail</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', position: 'relative' }}>
-                                    {/* Connecting line */}
-                                    <div style={{ position: 'absolute', top: 16, left: '10%', right: '10%', height: 2, backgroundColor: '#e5e7eb', zIndex: 0 }} />
-
-                                    {/* Steps */}
-                                    {[
-                                        { label: 'Pendaftaran', sub: 'Selesai', done: true },
-                                        { label: 'Check-in', sub: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }), done: true },
-                                        { label: 'Menunggu', sub: 'Dalam Antrean', active: true },
-                                        { label: 'Wawancara', sub: 'Belum dimulai', pending: true },
-                                        { label: 'Selesai', sub: 'Menunggu', pending: true },
-                                    ].map((step, i) => (
-                                        <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, position: 'relative', zIndex: 1, opacity: step.pending ? 0.5 : 1 }}>
-                                            <div style={{
-                                                width: 32,
-                                                height: 32,
-                                                borderRadius: '50%',
-                                                backgroundColor: step.done ? '#22c55e' : step.active ? '#3636e2' : '#e5e7eb',
-                                                color: step.done || step.active ? '#fff' : '#6b7280',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                fontSize: 12,
-                                                fontWeight: 700,
-                                                boxShadow: '0 0 0 4px #fff'
-                                            }}>
-                                                {step.done ? '✓' : i + 1}
-                                            </div>
-                                            <div style={{ textAlign: 'center' }}>
-                                                <p style={{ fontSize: 14, fontWeight: 700, color: step.active ? '#3636e2' : '#111827', margin: 0 }}>{step.label}</p>
-                                                <p style={{ fontSize: 12, color: step.active ? '#3636e2' : '#6b7280', margin: 0 }}>{step.sub}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Info Card untuk yang belum check-in */}
+                        {/* Info untuk yang belum check-in */}
                         {!isCheckedIn && (
                             <div style={{
                                 backgroundColor: '#eff6ff',
@@ -434,8 +644,8 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
                             </div>
                             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 16 }}>
                                 <div style={{
-                                    width: 160,
-                                    height: 160,
+                                    width: 140,
+                                    height: 140,
                                     backgroundColor: '#f3f4f6',
                                     borderRadius: 12,
                                     display: 'flex',
@@ -443,54 +653,12 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
                                     justifyContent: 'center',
                                     border: '1px solid #e5e7eb'
                                 }}>
-                                    <QrCode style={{ width: 80, height: 80, color: '#111827' }} />
+                                    <QrCode style={{ width: 70, height: 70, color: '#111827' }} />
                                 </div>
-                                <p style={{ fontSize: 14, color: '#6b7280', margin: 0, lineHeight: 1.6 }}>
-                                    Tunjukkan QR Code ini kepada petugas saat dipanggil untuk wawancara.
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Location Widget */}
-                        <div style={{ backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden', border: '1px solid #e5e7eb' }}>
-                            <div style={{ height: 120, backgroundColor: '#d1d5db', position: 'relative', overflow: 'hidden' }}>
-                                <div style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    background: 'linear-gradient(135deg, #3636e2 0%, #60a5fa 100%)',
-                                    opacity: 0.9
-                                }} />
-                                <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                                    <MapPin style={{ width: 32, height: 32, marginBottom: 8 }} />
-                                    <span style={{ fontWeight: 700, fontSize: 14 }}>Kantor BPS Kabupaten/Kota</span>
+                                <div>
+                                    <p style={{ fontSize: 14, fontWeight: 600, color: '#111827', margin: '0 0 4px' }}>{pesertaData.nama}</p>
+                                    <p style={{ fontSize: 12, color: '#6b7280', margin: 0, fontFamily: 'monospace' }}>NIK: {pesertaData.nik}</p>
                                 </div>
-                            </div>
-                            <div style={{ padding: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: locationVerified ? '#16a34a' : '#6b7280' }}>
-                                    {locationVerified ? (
-                                        <>
-                                            <CheckCircle style={{ width: 18, height: 18 }} />
-                                            Lokasi Terverifikasi
-                                        </>
-                                    ) : (
-                                        <>
-                                            <MapPin style={{ width: 18, height: 18 }} />
-                                            Belum Terverifikasi
-                                        </>
-                                    )}
-                                </div>
-                                <button style={{
-                                    fontSize: 12,
-                                    fontWeight: 700,
-                                    color: '#3636e2',
-                                    backgroundColor: 'rgba(54, 54, 226, 0.1)',
-                                    padding: '8px 12px',
-                                    borderRadius: 8,
-                                    border: 'none',
-                                    cursor: 'pointer'
-                                }}>
-                                    Petunjuk Arah
-                                </button>
                             </div>
                         </div>
 
@@ -526,26 +694,16 @@ export default function CandidateDashboard({ profile, notify }: CandidateDashboa
             <footer style={{ marginTop: 'auto', padding: '24px 0', borderTop: '1px solid #e8e8f3', backgroundColor: '#ffffff' }}>
                 <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, fontSize: 12, color: '#6b7280' }}>
                     <p style={{ margin: 0 }}>© 2025 Badan Pusat Statistik. Seleksi Petugas Mitra 2026.</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                        <a href="#" style={{ color: '#6b7280', textDecoration: 'none' }}>Kebijakan Privasi</a>
-                        <a href="#" style={{ color: '#6b7280', textDecoration: 'none' }}>Syarat & Ketentuan</a>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#22c55e' }} />
-                            Sistem Berjalan Normal
-                        </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#22c55e' }} />
+                        Sistem Berjalan Normal
                     </div>
                 </div>
             </footer>
 
-            {/* CSS Animations */}
             <style>{`
-                @keyframes spin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                }
-                @keyframes ping {
-                    75%, 100% { transform: scale(2); opacity: 0; }
-                }
+                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
             `}</style>
         </div>
     );

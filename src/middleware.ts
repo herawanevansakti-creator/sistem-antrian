@@ -2,9 +2,11 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
 const isPublicRoute = createRouteMatcher([
     '/',
+    '/peserta(.*)',  // Peserta login dengan NIK, tanpa Clerk
     '/sign-in(.*)',
     '/sign-up(.*)',
     '/api/webhooks(.*)',
+    '/api/peserta(.*)',  // API untuk verifikasi NIK peserta
 ]);
 
 export default clerkMiddleware(async (auth, request) => {

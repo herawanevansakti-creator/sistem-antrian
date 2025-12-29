@@ -84,7 +84,7 @@ export default function LandingPage() {
                     <div style={{ width: '100%', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
                         {/* Card 1: Peserta */}
                         <Link
-                            href="/sign-in"
+                            href="/peserta"
                             style={{
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -113,10 +113,10 @@ export default function LandingPage() {
                             </div>
                             <h3 style={{ color: '#0e0e1b', fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Peserta</h3>
                             <p style={{ color: '#505095', fontSize: '14px', lineHeight: 1.6, marginBottom: '24px', textAlign: 'left' }}>
-                                Akses status pendaftaran, lakukan check-in lokasi, dan lihat nomor antrean wawancara Anda.
+                                Login dengan NIK untuk check-in, lihat nomor antrean, dan pantau status wawancara Anda.
                             </p>
                             <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', color: '#3636e2', fontWeight: 600, fontSize: '14px' }}>
-                                Masuk Portal
+                                Masuk dengan NIK
                                 <ArrowRight style={{ width: '16px', height: '16px', marginLeft: '4px' }} />
                             </div>
                         </Link>
