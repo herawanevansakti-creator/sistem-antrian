@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Users, Clock, User, Video, CheckCircle, Volume2 } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Users, Clock, Video, CheckCircle, Volume2, VolumeX, Play } from 'lucide-react';
 
 interface Peserta {
     id: number;
@@ -15,10 +15,16 @@ interface Peserta {
 export default function DisplayPage() {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [calledNumber, setCalledNumber] = useState<string | null>(null);
+    const [calledName, setCalledName] = useState<string | null>(null);
+    const [calledRoom, setCalledRoom] = useState<string | null>(null);
     const [showAnnouncement, setShowAnnouncement] = useState(false);
+    const [isMuted, setIsMuted] = useState(false);
+    const [voicesLoaded, setVoicesLoaded] = useState(false);
+    const announcementQueue = useRef<{ number: string, name: string, room: string }[]>([]);
+    const isAnnouncing = useRef(false);
 
     // Data peserta (nanti real-time dari Supabase)
-    const [pesertaList] = useState<Peserta[]>([
+    const [pesertaList, setPesertaList] = useState<Peserta[]>([
         { id: 1, nama: 'Pingki Setriana', nomorAntrean: 'A-001', posisiDilamar: 'Petugas Pencacah', status: 'Diwawancara', ruangan: 'Ruang 1' },
         { id: 2, nama: 'Heni Purnama Sari', nomorAntrean: 'A-002', posisiDilamar: 'Pengawas', status: 'Diwawancara', ruangan: 'Ruang 2' },
         { id: 3, nama: 'Daiyan Agung Santosa', nomorAntrean: 'A-003', posisiDilamar: 'Petugas Pencacah', status: 'Menunggu' },
@@ -29,31 +35,135 @@ export default function DisplayPage() {
         { id: 8, nama: 'Jarot Tri Yuliawan', nomorAntrean: 'A-008', posisiDilamar: 'Pengawas', status: 'Menunggu' },
     ]);
 
+    // Load voices
+    useEffect(() => {
+        const loadVoices = () => {
+            const voices = window.speechSynthesis?.getVoices();
+            if (voices && voices.length > 0) {
+                setVoicesLoaded(true);
+            }
+        };
+
+        loadVoices();
+        window.speechSynthesis?.addEventListener('voiceschanged', loadVoices);
+
+        return () => {
+            window.speechSynthesis?.removeEventListener('voiceschanged', loadVoices);
+        };
+    }, []);
+
+    // Text-to-Speech function
+    const speak = useCallback((text: string, onEnd?: () => void) => {
+        if (isMuted || !window.speechSynthesis) {
+            onEnd?.();
+            return;
+        }
+
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        // Find Indonesian voice or use default
+        const voices = window.speechSynthesis.getVoices();
+        const indonesianVoice = voices.find(v =>
+            v.lang.includes('id') ||
+            v.lang.includes('ID') ||
+            v.name.toLowerCase().includes('indonesia')
+        );
+
+        if (indonesianVoice) {
+            utterance.voice = indonesianVoice;
+        }
+
+        utterance.lang = 'id-ID';
+        utterance.rate = 0.9;  // Sedikit lebih lambat untuk kejelasan
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        utterance.onend = () => {
+            onEnd?.();
+        };
+
+        utterance.onerror = () => {
+            onEnd?.();
+        };
+
+        window.speechSynthesis.speak(utterance);
+    }, [isMuted]);
+
+    // Announce a person with voice
+    const announceCall = useCallback((number: string, name: string, room: string) => {
+        setCalledNumber(number);
+        setCalledName(name);
+        setCalledRoom(room);
+        setShowAnnouncement(true);
+        isAnnouncing.current = true;
+
+        // Format nomor untuk dibacakan
+        const formattedNumber = number.replace('-', ' ').split('').join(' ');
+
+        // Announcement text sequence
+        const announcement = `
+            Perhatian. Perhatian.
+            Nomor antrean ${formattedNumber}.
+            Atas nama ${name}.
+            Silahkan menuju ${room} untuk wawancara.
+            Sekali lagi, nomor ${formattedNumber}, ${name}, menuju ${room}.
+        `;
+
+        // Play bell sound first, then speak
+        const bellAudio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2teleAAAAADMzMzxAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+        bellAudio.volume = 0.5;
+        bellAudio.play().catch(() => { });
+
+        setTimeout(() => {
+            speak(announcement, () => {
+                // Wait before hiding
+                setTimeout(() => {
+                    setShowAnnouncement(false);
+                    setCalledNumber(null);
+                    setCalledName(null);
+                    setCalledRoom(null);
+                    isAnnouncing.current = false;
+
+                    // Process next in queue
+                    if (announcementQueue.current.length > 0) {
+                        const next = announcementQueue.current.shift()!;
+                        setTimeout(() => announceCall(next.number, next.name, next.room), 2000);
+                    }
+                }, 3000);
+            });
+        }, 500);
+    }, [speak]);
+
+    // Demo: Manual call button for testing
+    const handleManualCall = () => {
+        const waiting = pesertaList.filter(p => p.status === 'Menunggu');
+        if (waiting.length > 0 && !isAnnouncing.current) {
+            const next = waiting[0];
+            announceCall(next.nomorAntrean, next.nama, 'Ruang 1');
+        }
+    };
+
     // Update time every second
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
 
-    // Simulate calling next number (untuk demo)
+    // Demo auto-call every 45 seconds
     useEffect(() => {
         const callTimer = setInterval(() => {
             const waiting = pesertaList.filter(p => p.status === 'Menunggu');
-            if (waiting.length > 0) {
+            if (waiting.length > 0 && !isAnnouncing.current) {
                 const next = waiting[0];
-                setCalledNumber(next.nomorAntrean);
-                setShowAnnouncement(true);
-
-                // Hide announcement after 10 seconds
-                setTimeout(() => {
-                    setShowAnnouncement(false);
-                    setCalledNumber(null);
-                }, 10000);
+                announceCall(next.nomorAntrean, next.nama, 'Ruang 1');
             }
-        }, 30000); // Call every 30 seconds for demo
+        }, 45000);
 
         return () => clearInterval(callTimer);
-    }, [pesertaList]);
+    }, [pesertaList, announceCall]);
 
     const sedangWawancara = pesertaList.filter(p => p.status === 'Diwawancara');
     const menunggu = pesertaList.filter(p => p.status === 'Menunggu');
@@ -76,12 +186,61 @@ export default function DisplayPage() {
             overflow: 'hidden',
             position: 'relative'
         }}>
+            {/* Sound Control Button */}
+            <button
+                onClick={() => setIsMuted(!isMuted)}
+                style={{
+                    position: 'fixed',
+                    top: 20,
+                    right: 20,
+                    zIndex: 200,
+                    width: 50,
+                    height: 50,
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: isMuted ? 'rgba(239, 68, 68, 0.3)' : 'rgba(34, 197, 94, 0.3)',
+                    color: isMuted ? '#ef4444' : '#22c55e',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
+                title={isMuted ? 'Aktifkan Suara' : 'Matikan Suara'}
+            >
+                {isMuted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+            </button>
+
+            {/* Manual Call Button (for demo) */}
+            <button
+                onClick={handleManualCall}
+                disabled={isAnnouncing.current}
+                style={{
+                    position: 'fixed',
+                    top: 80,
+                    right: 20,
+                    zIndex: 200,
+                    width: 50,
+                    height: 50,
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: 'rgba(59, 130, 246, 0.3)',
+                    color: '#3b82f6',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
+                title="Panggil Manual (Demo)"
+            >
+                <Play size={24} />
+            </button>
+
             {/* Announcement Overlay */}
-            {showAnnouncement && calledNumber && (
+            {showAnnouncement && calledNumber && calledName && (
                 <div style={{
                     position: 'fixed',
                     inset: 0,
-                    background: 'rgba(0,0,0,0.9)',
+                    background: 'rgba(0,0,0,0.95)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -92,29 +251,60 @@ export default function DisplayPage() {
                         textAlign: 'center',
                         animation: 'pulse 1s ease infinite'
                     }}>
+                        {/* Sound Wave Animation */}
                         <div style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: 16,
-                            marginBottom: 32
+                            marginBottom: 40
                         }}>
-                            <Volume2 size={64} color="#fbbf24" style={{ animation: 'bounce 0.5s ease infinite' }} />
-                            <span style={{ fontSize: 48, fontWeight: 700, color: '#fbbf24' }}>PANGGILAN</span>
-                            <Volume2 size={64} color="#fbbf24" style={{ animation: 'bounce 0.5s ease infinite' }} />
+                            <Volume2 size={80} color="#fbbf24" style={{ animation: 'bounce 0.5s ease infinite' }} />
+                            <span style={{ fontSize: 56, fontWeight: 800, color: '#fbbf24' }}>PANGGILAN</span>
+                            <Volume2 size={80} color="#fbbf24" style={{ animation: 'bounce 0.5s ease infinite', animationDelay: '0.2s' }} />
                         </div>
+
+                        {/* Queue Number */}
                         <div style={{
-                            fontSize: 200,
+                            fontSize: 220,
                             fontWeight: 900,
                             fontFamily: 'monospace',
                             color: '#22c55e',
-                            textShadow: '0 0 40px rgba(34, 197, 94, 0.5)',
-                            lineHeight: 1
+                            textShadow: '0 0 60px rgba(34, 197, 94, 0.6)',
+                            lineHeight: 1,
+                            marginBottom: 24
                         }}>
                             {calledNumber}
                         </div>
-                        <p style={{ fontSize: 36, color: '#94a3b8', marginTop: 32 }}>
-                            Silahkan menuju ruang wawancara
+
+                        {/* Name */}
+                        <div style={{
+                            fontSize: 64,
+                            fontWeight: 700,
+                            color: '#ffffff',
+                            marginBottom: 24,
+                            textShadow: '0 4px 20px rgba(0,0,0,0.5)'
+                        }}>
+                            {calledName}
+                        </div>
+
+                        {/* Room */}
+                        <div style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            background: 'rgba(139, 92, 246, 0.3)',
+                            border: '2px solid #8b5cf6',
+                            padding: '16px 40px',
+                            borderRadius: 20,
+                            marginBottom: 32
+                        }}>
+                            <Video size={32} color="#a78bfa" />
+                            <span style={{ fontSize: 36, fontWeight: 700, color: '#a78bfa' }}>{calledRoom}</span>
+                        </div>
+
+                        <p style={{ fontSize: 28, color: '#94a3b8', marginTop: 16 }}>
+                            Silahkan menuju ruang wawancara sekarang
                         </p>
                     </div>
                 </div>
@@ -378,6 +568,8 @@ export default function DisplayPage() {
                             <span style={{ fontSize: 16, fontWeight: 600 }}>📋 Siapkan dokumen identitas (KTP)</span>
                             <span style={{ fontSize: 16 }}>•</span>
                             <span style={{ fontSize: 16, fontWeight: 600 }}>⏱️ Durasi wawancara ±30 menit</span>
+                            <span style={{ fontSize: 16 }}>•</span>
+                            <span style={{ fontSize: 16, fontWeight: 600 }}>🔊 Sistem dilengkapi pengumuman suara otomatis</span>
                             <span style={{ fontSize: 16 }}>•</span>
                         </span>
                     ))}
