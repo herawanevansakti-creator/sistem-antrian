@@ -148,15 +148,58 @@ function MainApp() {
 // ===== ROLE SELECTION (for new users) =====
 function RoleSelection({ userId, userEmail, userName }: { userId?: string; userEmail?: string; userName?: string | null }) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [accountLimits, setAccountLimits] = useState<{ admin: { current: number, max: number }, interviewer: { current: number, max: number } } | null>(null);
   const { createClient } = require('@/lib/supabase/client');
   const supabase = createClient();
 
+  // Check account limits on load
+  useEffect(() => {
+    const checkLimits = async () => {
+      try {
+        // Count existing accounts
+        const { data: adminCount } = await supabase
+          .from('profiles')
+          .select('id', { count: 'exact', head: true })
+          .eq('role', 'admin');
+
+        const { data: interviewerCount } = await supabase
+          .from('profiles')
+          .select('id', { count: 'exact', head: true })
+          .eq('role', 'interviewer');
+
+        setAccountLimits({
+          admin: { current: adminCount?.length || 0, max: 2 },
+          interviewer: { current: interviewerCount?.length || 0, max: 10 }
+        });
+      } catch (err) {
+        console.log('Could not fetch limits, using defaults');
+        setAccountLimits({
+          admin: { current: 0, max: 2 },
+          interviewer: { current: 0, max: 10 }
+        });
+      }
+    };
+    checkLimits();
+  }, [supabase]);
+
   const handleSelectRole = async (role: 'candidate' | 'interviewer' | 'admin') => {
     if (!userId) return;
+    setError('');
+
+    // Check limits for admin and interviewer
+    if (role === 'admin' && accountLimits && accountLimits.admin.current >= accountLimits.admin.max) {
+      setError('Kuota akun Admin sudah penuh (maksimal 2 akun)');
+      return;
+    }
+    if (role === 'interviewer' && accountLimits && accountLimits.interviewer.current >= accountLimits.interviewer.max) {
+      setError('Kuota akun Pewawancara sudah penuh (maksimal 10 akun)');
+      return;
+    }
 
     setLoading(true);
 
-    const { error } = await supabase.from('profiles').insert({
+    const { error: insertError } = await supabase.from('profiles').insert({
       id: userId,
       email: userEmail,
       full_name: userName,
@@ -164,57 +207,133 @@ function RoleSelection({ userId, userEmail, userName }: { userId?: string; userE
       interviewer_status: role === 'interviewer' ? 'idle' : 'offline'
     });
 
-    if (error) {
-      console.error('Error creating profile:', error);
+    if (insertError) {
+      console.error('Error creating profile:', insertError);
+      setError('Gagal membuat akun: ' + insertError.message);
+      setLoading(false);
+      return;
     }
 
     // Reload page to fetch new profile
     window.location.reload();
   };
 
+  const adminFull = accountLimits && accountLimits.admin.current >= accountLimits.admin.max;
+  const interviewerFull = accountLimits && accountLimits.interviewer.current >= accountLimits.interviewer.max;
+
   return (
-    <div className="min-h-screen bg-[#f6f6f8] flex items-center justify-center p-6">
-      <div className="max-w-md w-full bg-white rounded-[32px] shadow-2xl p-10 text-center space-y-8 border border-gray-100">
-        <div className="space-y-2">
-          <div className="bg-[#3636e2]/10 w-16 h-16 rounded-2xl flex items-center justify-center text-[#3636e2] mx-auto">
-            <Infinity className="w-8 h-8" />
+    <div style={{ minHeight: '100vh', backgroundColor: '#f6f6f8', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ maxWidth: 440, width: '100%', backgroundColor: '#fff', borderRadius: 24, boxShadow: '0 10px 40px rgba(0,0,0,0.1)', padding: 40, textAlign: 'center' }}>
+        <div style={{ marginBottom: 32 }}>
+          <div style={{
+            width: 64,
+            height: 64,
+            background: 'linear-gradient(135deg, #3636e2, #60a5fa)',
+            borderRadius: 16,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+            color: 'white',
+            fontSize: 24,
+            fontWeight: 700
+          }}>
+            BPS
           </div>
-          <h1 className="text-3xl font-black text-[#0e0e1b] tracking-tighter italic">RecruitFlow</h1>
-          <p className="text-[#505095] font-medium">Pilih peran Anda untuk melanjutkan</p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#111827', margin: '0 0 8px' }}>Pilih Peran Anda</h1>
+          <p style={{ fontSize: 14, color: '#6b7280', margin: 0 }}>Seleksi Wawancara Mitra BPS 2026</p>
         </div>
-        <div className="space-y-3">
-          <button
-            onClick={() => handleSelectRole('candidate')}
-            disabled={loading}
-            className="w-full py-4 px-6 bg-white border-2 border-gray-100 rounded-2xl font-bold flex items-center justify-between hover:border-[#3636e2] hover:bg-blue-50 transition-all group disabled:opacity-50"
-          >
-            <span className="text-[#0e0e1b] group-hover:text-[#3636e2]">Kandidat</span>
-            <User className="w-5 h-5 text-gray-300 group-hover:text-[#3636e2]" />
-          </button>
-          <button
-            onClick={() => handleSelectRole('interviewer')}
-            disabled={loading}
-            className="w-full py-4 px-6 bg-white border-2 border-gray-100 rounded-2xl font-bold flex items-center justify-between hover:border-[#3636e2] hover:bg-purple-50 transition-all group disabled:opacity-50"
-          >
-            <span className="text-[#0e0e1b] group-hover:text-[#3636e2]">Pewawancara</span>
-            <Users className="w-5 h-5 text-gray-300 group-hover:text-[#3636e2]" />
-          </button>
-          <button
-            onClick={() => handleSelectRole('admin')}
-            disabled={loading}
-            className="w-full py-4 px-6 bg-white border-2 border-gray-100 rounded-2xl font-bold flex items-center justify-between hover:border-[#3636e2] hover:bg-emerald-50 transition-all group disabled:opacity-50"
-          >
-            <span className="text-[#0e0e1b] group-hover:text-[#3636e2]">Administrator</span>
-            <Settings className="w-5 h-5 text-gray-300 group-hover:text-[#3636e2]" />
-          </button>
-        </div>
-        {loading && (
-          <div className="flex items-center justify-center gap-2 text-[#3636e2]">
-            <Loader2 className="w-5 h-5 animate-spin" />
-            <span className="font-medium">Menyimpan...</span>
+
+        {error && (
+          <div style={{
+            backgroundColor: '#fee2e2',
+            color: '#991b1b',
+            padding: '12px 16px',
+            borderRadius: 12,
+            marginBottom: 20,
+            fontSize: 14,
+            fontWeight: 500
+          }}>
+            {error}
           </div>
         )}
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* Pewawancara Button */}
+          <button
+            onClick={() => handleSelectRole('interviewer')}
+            disabled={loading || !!interviewerFull}
+            style={{
+              width: '100%',
+              padding: '16px 20px',
+              backgroundColor: interviewerFull ? '#f3f4f6' : '#fff',
+              border: '2px solid',
+              borderColor: interviewerFull ? '#e5e7eb' : '#e5e7eb',
+              borderRadius: 16,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: interviewerFull ? 'not-allowed' : 'pointer',
+              opacity: interviewerFull ? 0.6 : 1,
+              transition: 'all 0.2s'
+            }}
+          >
+            <div style={{ textAlign: 'left' }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: interviewerFull ? '#9ca3af' : '#111827', display: 'block' }}>
+                Pewawancara
+              </span>
+              <span style={{ fontSize: 12, color: interviewerFull ? '#9ca3af' : '#6b7280' }}>
+                {accountLimits ? `${accountLimits.interviewer.current}/${accountLimits.interviewer.max} slot terisi` : 'Loading...'}
+              </span>
+            </div>
+            <Users style={{ width: 24, height: 24, color: interviewerFull ? '#d1d5db' : '#8b5cf6' }} />
+          </button>
+
+          {/* Admin Button */}
+          <button
+            onClick={() => handleSelectRole('admin')}
+            disabled={loading || !!adminFull}
+            style={{
+              width: '100%',
+              padding: '16px 20px',
+              backgroundColor: adminFull ? '#f3f4f6' : '#fff',
+              border: '2px solid',
+              borderColor: adminFull ? '#e5e7eb' : '#e5e7eb',
+              borderRadius: 16,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: adminFull ? 'not-allowed' : 'pointer',
+              opacity: adminFull ? 0.6 : 1,
+              transition: 'all 0.2s'
+            }}
+          >
+            <div style={{ textAlign: 'left' }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: adminFull ? '#9ca3af' : '#111827', display: 'block' }}>
+                Administrator
+              </span>
+              <span style={{ fontSize: 12, color: adminFull ? '#9ca3af' : '#6b7280' }}>
+                {accountLimits ? `${accountLimits.admin.current}/${accountLimits.admin.max} slot terisi` : 'Loading...'}
+              </span>
+            </div>
+            <Settings style={{ width: 24, height: 24, color: adminFull ? '#d1d5db' : '#22c55e' }} />
+          </button>
+        </div>
+
+        {loading && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 20, color: '#3636e2' }}>
+            <Loader2 style={{ width: 20, height: 20, animation: 'spin 1s linear infinite' }} />
+            <span style={{ fontWeight: 500 }}>Menyimpan...</span>
+          </div>
+        )}
+
+        <div style={{ marginTop: 24, padding: '16px', backgroundColor: '#eff6ff', borderRadius: 12 }}>
+          <p style={{ fontSize: 13, color: '#1e40af', margin: 0 }}>
+            <strong>Catatan:</strong> Peserta wawancara login melalui portal terpisah menggunakan NIK.
+          </p>
+        </div>
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
