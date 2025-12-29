@@ -26,6 +26,7 @@ import {
 import LandingPage from '@/components/LandingPage';
 import CandidateDashboard from '@/components/CandidateDashboard';
 import InterviewerDashboard from '@/components/InterviewerDashboard';
+import AdminDashboard from '@/components/AdminDashboard';
 import RoleSwitcher from '@/components/RoleSwitcher';
 import {
   useProfile,
@@ -126,11 +127,8 @@ function MainApp() {
       )}
 
       {profile.role === 'admin' && (
-        <AdminView
+        <AdminDashboard
           profile={profile}
-          selectedResult={selectedResult}
-          setSelectedResult={setSelectedResult}
-          formatTime={formatTime}
         />
       )}
 
